@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "i2c.h"
-#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
@@ -91,12 +90,12 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   MX_USB_Device_Init();
+  MX_I2C1_Init();
+  MX_TIM2_Init();
   MX_I2C2_Init();
-  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -108,27 +107,28 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
+      printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,rst:%d\r\n ",
       HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0),
       HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1),
       HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2),
       HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3),
-      HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15),
+      HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5),
+      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6),
+      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7),
+      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14),
       HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15),
+      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4),
       HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6),
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10),
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_11),
       HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13),
       HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14),
       HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_15),

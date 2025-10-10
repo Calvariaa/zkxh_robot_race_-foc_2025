@@ -127,12 +127,12 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    // fake_encoder = (fake_encoder + 10) % 32767;
+    fake_encoder = (fake_encoder + 1) % 32767;
 
-      printf("%d,%d,%d,%d,%d,%d,%d\r\n",
+      printf("%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
       motor_left_foc_driver.ouput_duty[0], motor_left_foc_driver.ouput_duty[1], motor_left_foc_driver.ouput_duty[2],
       motor_right_foc_driver.ouput_duty[0], motor_right_foc_driver.ouput_duty[1], motor_right_foc_driver.ouput_duty[2],
-      fake_encoder
+      fake_encoder, read_left_encoder(), read_right_encoder()
       );
   }
   /* USER CODE END 3 */
@@ -205,10 +205,10 @@ int _write(int file, char *ptr, int len) {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM1) {
-    foc_control_fast(&motor_left_foc_driver, read_left_encoder(), 0.1, 0);
+    foc_control_fast(&motor_left_foc_driver, fake_encoder, 0.1, 0);
   }
   if (htim->Instance == TIM8) {
-    foc_control_fast(&motor_right_foc_driver, read_right_encoder(), 0.1, 0);
+    foc_control_fast(&motor_right_foc_driver, fake_encoder, 0.1, 0);
   }
 }
 

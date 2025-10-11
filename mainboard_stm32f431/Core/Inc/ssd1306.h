@@ -1,302 +1,172 @@
-/**
- * original author:  Tilen Majerle<tilen@majerle.eu>
- * modification for STM32f10x: Alexander Lutsai<s.lyra@ya.ru>
-
-   ----------------------------------------------------------------------
-   	Copyright (C) Alexander Lutsai, 2016
-    Copyright (C) Tilen Majerle, 2015
-    
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    any later version.
-     
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-   ----------------------------------------------------------------------
+/*
+ * ssd1306.h
+ *
+ *  Created on: 14/04/2018
+ *  Update on: 10/04/2019
+ *      Author: Andriy Honcharenko
+ *      version: 2
+ *
+ *  Modify on: 06/11/2021
+ *      Author: Roberto Benjami
+ *  Added features in DMA mode:
+ *  - ssd1306_UpdateScreen works without blocking
+ *  - you can query that UpdateScreen is complete (if ssd1306_UpdateScreenCompleted() == 1)
+ *  - callback function if UpdateScreen is complete (ssd1306_UpdateCompletedCallback)
+ *  Added features in DMA mode with continuous display update:
+ *  - enable continuous display update
+ *  - disable continuous display update
+ *  - enable raster interrupt(s) of PAGEx (you can set which PAGE(s) )
  */
-#ifndef SSD1306_H
-#define SSD1306_H 100
 
-/* C++ detection */
-#ifdef __cplusplus
-extern C {
-#endif
+#ifndef SSD1306_H_
+#define SSD1306_H_
 
-#include "main.h"
-
+#include "ssd1306_defines.h"
 #include "fonts.h"
+#include "main.h"
+#include <stdlib.h>
+#include <string.h>
 
-#include "stdlib.h"
-#include "string.h"
+// I2c address
+#define SSD1306_I2C_ADDR       SSD1306_ADDRESS << 1 // 0x3C << 1 = 0x78
 
-
-/* I2C address */
-#ifndef SSD1306_I2C_ADDR
-#define SSD1306_I2C_ADDR         0x78
-//#define SSD1306_I2C_ADDR       0x7A
+#ifdef  SSD1306_128X64
+#define SSD1306_GEOMETRY       GEOMETRY_128_64
+// SSD1306 width in pixels
+#define SSD1306_WIDTH          128
+// SSD1306 LCD height in pixels
+#define SSD1306_HEIGHT         64
+#elif defined(SSD1306_128X32)
+#define SSD1306_GEOMETRY       GEOMETRY_128_32
+// SSD1306 width in pixels
+#define SSD1306_WIDTH          128
+// SSD1306 LCD height in pixels
+#define SSD1306_HEIGHT         32
 #endif
 
-/* SSD1306 settings */
-/* SSD1306 width in pixels */
-#ifndef SSD1306_WIDTH
-#define SSD1306_WIDTH            128
-#endif
-/* SSD1306 LCD height in pixels */
-#ifndef SSD1306_HEIGHT
-#define SSD1306_HEIGHT           64
-#endif
+// SSD1306 LCD Buffer Size
+#define SSD1306_BUFFER_SIZE   (SSD1306_WIDTH * SSD1306_HEIGHT / 8)
 
-/**
- * @brief  SSD1306 color enumeration
- */
+// Display commands
+#define CHARGEPUMP            0x8D
+#define COLUMNADDR            0x21
+#define COMSCANDEC            0xC8
+#define COMSCANINC            0xC0
+#define DISPLAYALLON          0xA5
+#define DISPLAYALLON_RESUME   0xA4
+#define DISPLAYOFF            0xAE
+#define DISPLAYON             0xAF
+#define EXTERNALVCC           0x01
+#define INVERTDISPLAY         0xA7
+#define MEMORYMODE            0x20
+#define NORMALDISPLAY         0xA6
+#define PAGEADDR              0x22
+#define SEGREMAP              0xA0
+#define SETCOMPINS            0xDA
+#define SETCONTRAST           0x81
+#define SETDISPLAYCLOCKDIV    0xD5
+#define SETDISPLAYOFFSET      0xD3
+#define SETHIGHCOLUMN         0x10
+#define SETLOWCOLUMN          0x00
+#define SETMULTIPLEX          0xA8
+#define SETPRECHARGE          0xD9
+#define SETSEGMENTREMAP       0xA1
+#define SETSTARTLINE          0x40
+#define SETVCOMDETECT         0xDB
+#define SWITCHCAPVCC          0x02
+
+#define SWAP_INT16_T(a, b) { int16_t t = a; a = b; b = t; }
+//
+//  Enumeration for screen colors
+//
 typedef enum {
-	SSD1306_COLOR_BLACK = 0x00, /*!< Black color, no pixel */
-	SSD1306_COLOR_WHITE = 0x01  /*!< Pixel is set. Color depends on LCD */
-} SSD1306_COLOR_t;
+  Black = 0x00,  // Black color, no pixel
+  White = 0x01,  // Pixel is set. Color depends on LCD
+  Inverse = 0x02
+} SSD1306_COLOR;
 
+typedef enum {
+  GEOMETRY_128_64 = 0,
+  GEOMETRY_128_32 = 1
+} SSD1306_Geometry;
+//
+//  Struct to store transformations
+//
+typedef struct {
+  uint16_t      CurrentX;
+  uint16_t      CurrentY;
+  uint8_t       Inverted;
+  SSD1306_COLOR Color;
+  uint8_t       Initialized;
+} SSD1306_t;
 
-#define SSD1306_RIGHT_HORIZONTAL_SCROLL              0x26
-#define SSD1306_LEFT_HORIZONTAL_SCROLL               0x27
-#define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL 0x29
-#define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL  0x2A
-#define SSD1306_DEACTIVATE_SCROLL                    0x2E // Stop scroll
-#define SSD1306_ACTIVATE_SCROLL                      0x2F // Start scroll
-#define SSD1306_SET_VERTICAL_SCROLL_AREA             0xA3 // Set scroll range
+typedef struct {
+    uint8_t x;
+    uint8_t y;
+} SSD1306_VERTEX;
 
-#define SSD1306_NORMALDISPLAY       0xA6
-#define SSD1306_INVERTDISPLAY       0xA7
+//  Definition of the i2c port in main
+extern I2C_HandleTypeDef SSD1306_I2C_PORT;
 
-/**
- * @brief  Initializes SSD1306 LCD
- * @param  None
- * @retval Initialization status:
- *           - 0: LCD was not detected on I2C port
- *           - > 0: LCD initialized OK and ready to use
- */
-uint8_t SSD1306_Init(void);
+/* Private function prototypes -----------------------------------------------*/
+uint16_t ssd1306_GetWidth(void);
+uint16_t ssd1306_GetHeight(void);
+SSD1306_COLOR ssd1306_GetColor(void);
+void ssd1306_SetColor(SSD1306_COLOR color);
+uint8_t ssd1306_Init(void);
+void ssd1306_Fill(void);
+void ssd1306_DrawPixel(uint8_t x, uint8_t y);
+void ssd1306_DrawBitmap(uint8_t X, uint8_t Y, uint8_t W, uint8_t H, const uint8_t* pBMP);
+void ssd1306_DrawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1);
+void ssd1306_DrawVerticalLine(int16_t x, int16_t y, int16_t length);
+void ssd1306_DrawHorizontalLine(int16_t x, int16_t y, int16_t length);
+void ssd1306_DrawRect(int16_t x, int16_t y, int16_t width, int16_t height);
+void ssd1306_DrawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3);
+void ssd1306_FillRect(int16_t xMove, int16_t yMove, int16_t width, int16_t height);
+void ssd1306_DrawArc(uint8_t x, uint8_t y, uint8_t radius, uint16_t start_angle, uint16_t sweep);
+void ssd1306_DrawCircle(int16_t x0, int16_t y0, int16_t radius);
+void ssd1306_FillCircle(int16_t x0, int16_t y0, int16_t radius);
+void ssd1306_Polyline(const SSD1306_VERTEX *par_vertex, uint16_t par_size);
+void ssd1306_DrawCircleQuads(int16_t x0, int16_t y0, int16_t radius, uint8_t quads);
+void ssd1306_DrawProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress);
+char ssd1306_WriteChar(char ch, FontDef Font);
+char ssd1306_WriteString(char* str, FontDef Font);
+void ssd1306_SetCursor(uint8_t x, uint8_t y);
+void ssd1306_Clear(void);
 
-/** 
- * @brief  Updates buffer from internal RAM to LCD
- * @note   This function must be called each time you do some changes to LCD, to update buffer from RAM to LCD
- * @param  None
- * @retval None
- */
-void SSD1306_UpdateScreen(void);
+void ssd1306_WriteCommand(uint8_t command);
 
-/**
- * @brief  Toggles pixels invertion inside internal RAM
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  None
- * @retval None
- */
-void SSD1306_ToggleInvert(void);
+#define ssd1306_DisplayOn()             ssd1306_WriteCommand(DISPLAYON)
+#define ssd1306_DisplayOff()            ssd1306_WriteCommand(DISPLAYOFF)
+#define ssd1306_InvertDisplay()         ssd1306_WriteCommand(INVERTDISPLAY)
+#define ssd1306_NormalDisplay()         ssd1306_WriteCommand(NORMALDISPLAY)
+#define ssd1306_ResetOrientation()      { ssd1306_WriteCommand(SEGREMAP); ssd1306_WriteCommand(COMSCANINC); }
+#define ssd1306_FlipScreenVertically()  { ssd1306_WriteCommand(SEGREMAP | 0x01); ssd1306_WriteCommand(COMSCANDEC); }
+#define ssd1306_MirrorScreen()          { ssd1306_WriteCommand(SEGREMAP | 0x01); ssd1306_WriteCommand(COMSCANINC); }
+#define ssd1306_MirrorFlipScreen()      { ssd1306_WriteCommand(SEGREMAP); ssd1306_WriteCommand(COMSCANDEC); }
 
-/** 
- * @brief  Fills entire LCD with desired color
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  Color: Color to be used for screen fill. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval None
- */
-void SSD1306_Fill(SSD1306_COLOR_t Color);
-
-/**
- * @brief  Draws pixel at desired location
- * @note   @ref SSD1306_UpdateScreen() must called after that in order to see updated LCD screen
- * @param  x: X location. This parameter can be a value between 0 and SSD1306_WIDTH - 1
- * @param  y: Y location. This parameter can be a value between 0 and SSD1306_HEIGHT - 1
- * @param  color: Color to be used for screen fill. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval None
- */
-void SSD1306_DrawPixel(uint16_t x, uint16_t y, SSD1306_COLOR_t color);
-
-/**
- * @brief  Sets cursor pointer to desired location for strings
- * @param  x: X location. This parameter can be a value between 0 and SSD1306_WIDTH - 1
- * @param  y: Y location. This parameter can be a value between 0 and SSD1306_HEIGHT - 1
- * @retval None
- */
-void SSD1306_GotoXY(uint16_t x, uint16_t y);
-
-/**
- * @brief  Puts character to internal RAM
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  ch: Character to be written
- * @param  *Font: Pointer to @ref FontDef_t structure with used font
- * @param  color: Color used for drawing. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval Character written
- */
-char SSD1306_Putc(char ch, FontDef_t* Font, SSD1306_COLOR_t color);
-
-/**
- * @brief  Puts string to internal RAM
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  *str: String to be written
- * @param  *Font: Pointer to @ref FontDef_t structure with used font
- * @param  color: Color used for drawing. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval Zero on success or character value when function failed
- */
-char SSD1306_Puts(char* str, FontDef_t* Font, SSD1306_COLOR_t color);
-
-/**
- * @brief  Draws line on LCD
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x0: Line X start point. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y0: Line Y start point. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  x1: Line X end point. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y1: Line Y end point. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  c: Color to be used. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval None
- */
-void SSD1306_DrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, SSD1306_COLOR_t c);
-
-/**
- * @brief  Draws rectangle on LCD
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x: Top left X start point. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y: Top left Y start point. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  w: Rectangle width in units of pixels
- * @param  h: Rectangle height in units of pixels
- * @param  c: Color to be used. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval None
- */
-void SSD1306_DrawRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SSD1306_COLOR_t c);
-
-/**
- * @brief  Draws filled rectangle on LCD
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x: Top left X start point. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y: Top left Y start point. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  w: Rectangle width in units of pixels
- * @param  h: Rectangle height in units of pixels
- * @param  c: Color to be used. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval None
- */
-void SSD1306_DrawFilledRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SSD1306_COLOR_t c);
-
-/**
- * @brief  Draws triangle on LCD
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x1: First coordinate X location. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y1: First coordinate Y location. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  x2: Second coordinate X location. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y2: Second coordinate Y location. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  x3: Third coordinate X location. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y3: Third coordinate Y location. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  c: Color to be used. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval None
- */
-void SSD1306_DrawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, SSD1306_COLOR_t color);
-
-/**
- * @brief  Draws circle to STM buffer
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x: X location for center of circle. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y: Y location for center of circle. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  r: Circle radius in units of pixels
- * @param  c: Color to be used. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval None
- */
-void SSD1306_DrawCircle(int16_t x0, int16_t y0, int16_t r, SSD1306_COLOR_t c);
-
-/**
- * @brief  Draws filled circle to STM buffer
- * @note   @ref SSD1306_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x: X location for center of circle. Valid input is 0 to SSD1306_WIDTH - 1
- * @param  y: Y location for center of circle. Valid input is 0 to SSD1306_HEIGHT - 1
- * @param  r: Circle radius in units of pixels
- * @param  c: Color to be used. This parameter can be a value of @ref SSD1306_COLOR_t enumeration
- * @retval None
- */
-void SSD1306_DrawFilledCircle(int16_t x0, int16_t y0, int16_t r, SSD1306_COLOR_t c);
-
-
-
-#ifndef ssd1306_I2C_TIMEOUT
-#define ssd1306_I2C_TIMEOUT					20000
+#if  SSD1306_USE_DMA == 0
+void ssd1306_UpdateScreen(void);      /* copy the contents of the Screenbuffer (SSD1306_Buffer) to the display */
+#define ssd1306_UpdateScreenCompleted() 1
+#define ssd1306_ContUpdateEnable()
+#define ssd1306_ContUpdateDisable()
+#define ssd1306_SetRasterInt(r)
+#elif SSD1306_USE_DMA == 1
+#if   SSD1306_CONTUPDATE == 0
+void ssd1306_UpdateScreen(void);      /* copy the contents of the Screenbuffer (SSD1306_Buffer) to the display */
+char ssd1306_UpdateScreenCompleted(void); /* asks if the update is already complete (0:not completed, 1:completed) */
+__weak void ssd1306_UpdateCompletedCallback(void); /* you can create a function for the end of the update (attention!: interrupt function) */
+#define ssd1306_ContUpdateEnable()
+#define ssd1306_ContUpdateDisable()
+#define ssd1306_SetRasterInt(r)
+#elif SSD1306_CONTUPDATE == 1
+#define ssd1306_UpdateScreen()
+#define ssd1306_UpdateScreenCompleted() 1
+void ssd1306_ContUpdateEnable(void);  /* enable the continuous dsplay update in background (use DMA and interrupt) */
+void ssd1306_ContUpdateDisable(void); /* disable the continuous dsplay update in background */
+void ssd1306_SetRasterInt(uint8_t r); /* enable raster interrupt(s) of PAGEx (0:NONE, 1:PAGE0, 2:PAGE1, 4:PAGE2 ... 128:PAGE7, 255:All_PAGES) */
+__weak void ssd1306_RasterIntCallback(uint8_t r); /* 0:At the beginning of PAGE0, 1:PAGE1, 2:PAGE2 ... 7:PAGE7 (attention!: interrupt function) */
+#endif
 #endif
 
-/**
- * @brief  Initializes SSD1306 LCD
- * @param  None
- * @retval Initialization status:
- *           - 0: LCD was not detected on I2C port
- *           - > 0: LCD initialized OK and ready to use
- */
-void ssd1306_I2C_Init();
-
-/**
- * @brief  Writes single byte to slave
- * @param  *I2Cx: I2C used
- * @param  address: 7 bit slave address, left aligned, bits 7:1 are used, LSB bit is not used
- * @param  reg: register to write to
- * @param  data: data to be written
- * @retval None
- */
-void ssd1306_I2C_Write(uint8_t address, uint8_t reg, uint8_t data);
-
-/**
- * @brief  Writes multi bytes to slave
- * @param  *I2Cx: I2C used
- * @param  address: 7 bit slave address, left aligned, bits 7:1 are used, LSB bit is not used
- * @param  reg: register to write to
- * @param  *data: pointer to data array to write it to slave
- * @param  count: how many bytes will be written
- * @retval None
- */
-void ssd1306_I2C_WriteMulti(uint8_t address, uint8_t reg, uint8_t *data, uint16_t count);
-
-/**
- * @brief  Draws the Bitmap
- * @param  X:  X location to start the Drawing
- * @param  Y:  Y location to start the Drawing
- * @param  *bitmap : Pointer to the bitmap
- * @param  W : width of the image
- * @param  H : Height of the image
- * @param  color : 1-> white/blue, 0-> black
- */
-void SSD1306_DrawBitmap(int16_t x, int16_t y, const unsigned char* bitmap, int16_t w, int16_t h, uint16_t color);
-
-// scroll the screen for fixed rows
-
-void SSD1306_ScrollRight(uint8_t start_row, uint8_t end_row);
-
-
-void SSD1306_ScrollLeft(uint8_t start_row, uint8_t end_row);
-
-
-void SSD1306_Scrolldiagright(uint8_t start_row, uint8_t end_row);
-
-
-void SSD1306_Scrolldiagleft(uint8_t start_row, uint8_t end_row);
-
-
-
-void SSD1306_Stopscroll(void);
-
-
-// inverts the display i = 1->inverted, i = 0->normal
-
-void SSD1306_InvertDisplay (int i);
-
-
-
-
-
-
-// clear the display
-
-void SSD1306_Clear (void);
-
-
-/* C++ detection */
-#ifdef __cplusplus
-}
-#endif
-
-#endif
+#endif /* SSD1306_H_ */

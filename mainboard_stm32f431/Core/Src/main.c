@@ -99,7 +99,7 @@ int main(void)
   MX_I2C2_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  SSD1306_Init();
+  ssd1306_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -109,42 +109,44 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-      printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n ",
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13),
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14),
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_15),
-      HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4),
-      HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6),
-      HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5),
-      HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7),
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14),
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6),
-      HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10),
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3),
-      HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_11),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5),
+      // printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n ",
+      // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13),
+      // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14),
+      // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_15),
+      // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4),
+      // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6),
+      // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5),
+      // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7),
+      // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14),
+      // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6),
+      // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10),
+      // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3),
+      // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_11),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5),
+      //
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12),
+      // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13),
+      // HAL_GPIO_ReadPin(GPIOG, GPIO_PIN_10)
+      //
+      // );
 
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12),
-      HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13),
-      HAL_GPIO_ReadPin(GPIOG, GPIO_PIN_10)
-
-      );
 
 
-      // SSD1306_GotoXY (10,10); // goto 10, 10
-      // SSD1306_Puts ("HELLO", &Font_11x18, SSD1306_COLOR_WHITE); // print Hello
-      // SSD1306_GotoXY (10, 30);
-      // SSD1306_Puts ("WORLD !!", &Font_11x18, SSD1306_COLOR_WHITE);
-      // SSD1306_UpdateScreen(); // update screen
+      ssd1306_SetColor(White);
+      ssd1306_Fill();
+      ssd1306_SetCursor(2, 2);
+      ssd1306_SetColor(Black);
+      ssd1306_WriteString("Helo", Font_11x18);
+      ssd1306_UpdateScreen();
 
   }
   /* USER CODE END 3 */

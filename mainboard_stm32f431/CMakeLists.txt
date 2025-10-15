@@ -35,7 +35,9 @@ project(${CMAKE_PROJECT_NAME})
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
 # Create an executable object type
-add_executable(${CMAKE_PROJECT_NAME})
+add_executable(${CMAKE_PROJECT_NAME}
+        Core/Src/icm42688.c
+        Core/Inc/icm42688.h)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
@@ -50,6 +52,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ../Core/Src/ssd1306.c
     ../Core/Src/fonts.c
+#    ../Core/Src/icm42688_hal.c
 )
 
 # Add include paths

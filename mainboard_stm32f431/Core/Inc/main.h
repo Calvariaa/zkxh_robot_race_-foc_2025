@@ -57,6 +57,60 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define TIM_FREQUENCY 1000
+#define COUNT_PERIOD (TIM_CLK_MHz*1000000/TIM_FREQUENCY/PRESCALOR-1)
+#define TIM_CLK_MHz 170
+#define PRESCALOR 170-1
+#define LED_F0_Pin GPIO_PIN_13
+#define LED_F0_GPIO_Port GPIOC
+#define LED_F1_Pin GPIO_PIN_14
+#define LED_F1_GPIO_Port GPIOC
+#define LED_F2_Pin GPIO_PIN_15
+#define LED_F2_GPIO_Port GPIOC
+#define PRESS_Pin GPIO_PIN_10
+#define PRESS_GPIO_Port GPIOG
+#define LED_F3_Pin GPIO_PIN_4
+#define LED_F3_GPIO_Port GPIOA
+#define LED_F5_Pin GPIO_PIN_5
+#define LED_F5_GPIO_Port GPIOA
+#define LED_F4_Pin GPIO_PIN_6
+#define LED_F4_GPIO_Port GPIOA
+#define LED_F6_Pin GPIO_PIN_7
+#define LED_F6_GPIO_Port GPIOA
+#define LED_F7_Pin GPIO_PIN_4
+#define LED_F7_GPIO_Port GPIOC
+#define LED_B0_Pin GPIO_PIN_0
+#define LED_B0_GPIO_Port GPIOB
+#define LED_F8_Pin GPIO_PIN_1
+#define LED_F8_GPIO_Port GPIOB
+#define LED_B1_Pin GPIO_PIN_2
+#define LED_B1_GPIO_Port GPIOB
+#define LED_B3_Pin GPIO_PIN_10
+#define LED_B3_GPIO_Port GPIOB
+#define LED_B2_Pin GPIO_PIN_11
+#define LED_B2_GPIO_Port GPIOB
+#define LED_B4_Pin GPIO_PIN_12
+#define LED_B4_GPIO_Port GPIOB
+#define LED_B5_Pin GPIO_PIN_13
+#define LED_B5_GPIO_Port GPIOB
+#define LED_F10_Pin GPIO_PIN_14
+#define LED_F10_GPIO_Port GPIOB
+#define LED_F9_Pin GPIO_PIN_15
+#define LED_F9_GPIO_Port GPIOB
+#define LED_F11_Pin GPIO_PIN_6
+#define LED_F11_GPIO_Port GPIOC
+#define LED_F12_Pin GPIO_PIN_10
+#define LED_F12_GPIO_Port GPIOA
+#define LED_F13_Pin GPIO_PIN_10
+#define LED_F13_GPIO_Port GPIOC
+#define LED_F15_Pin GPIO_PIN_11
+#define LED_F15_GPIO_Port GPIOC
+#define LED_F14_Pin GPIO_PIN_3
+#define LED_F14_GPIO_Port GPIOB
+#define LED_F16_Pin GPIO_PIN_4
+#define LED_F16_GPIO_Port GPIOB
+#define LED_F17_Pin GPIO_PIN_5
+#define LED_F17_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

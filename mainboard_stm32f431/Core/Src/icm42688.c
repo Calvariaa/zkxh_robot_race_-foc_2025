@@ -10,8 +10,8 @@
 uint8_t ICM42688_Init(I2C_HandleTypeDef *hi2c)
 {
     // 1. 重置设备
-//    ICM42688_Reset(hi2c);
-//    HAL_Delay(2); // 等待2ms确保重置完成
+    ICM42688_Reset(hi2c);
+    HAL_Delay(2); // 等待2ms确保重置完成
 
     // 2. 验证设备ID
     if(ICM42688_WhoAmI(hi2c) != 0x47)
@@ -25,7 +25,7 @@ uint8_t ICM42688_Init(I2C_HandleTypeDef *hi2c)
     {
         return ICM42688_ERR_COMM;
     }
-    HAL_Delay(50); // 等待50ms
+    HAL_Delay(2); // 等待50ms
 
     // 4. 配置陀螺仪 ±2000dps, ODR=1kHz
     if(ICM42688_WriteReg(hi2c, GYRO_CONFIG0, 0x06) != HAL_OK)

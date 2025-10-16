@@ -51,34 +51,34 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pins : PC13 PC14 PC15 PC4
-                           PC6 PC10 PC11 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_4
-                          |GPIO_PIN_6|GPIO_PIN_10|GPIO_PIN_11;
+  /*Configure GPIO pins : LED_F0_Pin LED_F1_Pin LED_F2_Pin LED_F7_Pin
+                           LED_F11_Pin LED_F13_Pin LED_F15_Pin */
+  GPIO_InitStruct.Pin = LED_F0_Pin|LED_F1_Pin|LED_F2_Pin|LED_F7_Pin
+                          |LED_F11_Pin|LED_F13_Pin|LED_F15_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PG10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  /*Configure GPIO pin : PRESS_Pin */
+  GPIO_InitStruct.Pin = PRESS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+  HAL_GPIO_Init(PRESS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA4 PA5 PA6 PA7
-                           PA10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7
-                          |GPIO_PIN_10;
+  /*Configure GPIO pins : LED_F3_Pin LED_F5_Pin LED_F4_Pin LED_F6_Pin
+                           LED_F12_Pin */
+  GPIO_InitStruct.Pin = LED_F3_Pin|LED_F5_Pin|LED_F4_Pin|LED_F6_Pin
+                          |LED_F12_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB1 PB2 PB10
-                           PB11 PB12 PB13 PB14
-                           PB15 PB3 PB4 PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5;
+  /*Configure GPIO pins : LED_B0_Pin LED_F8_Pin LED_B1_Pin LED_B3_Pin
+                           LED_B2_Pin LED_B4_Pin LED_B5_Pin LED_F10_Pin
+                           LED_F9_Pin LED_F14_Pin LED_F16_Pin LED_F17_Pin */
+  GPIO_InitStruct.Pin = LED_B0_Pin|LED_F8_Pin|LED_B1_Pin|LED_B3_Pin
+                          |LED_B2_Pin|LED_B4_Pin|LED_B5_Pin|LED_F10_Pin
+                          |LED_F9_Pin|LED_F14_Pin|LED_F16_Pin|LED_F17_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

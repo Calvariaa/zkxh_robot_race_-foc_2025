@@ -10,20 +10,20 @@ ssd1306_WriteString((_chr), Font_7x10); \
 
 #define screen_show_int(_x, _y, _num, _) do { \
 static char _chr[128]; \
-sprintf(chr, "%ld ", ((uint32_t)_num)); \
+sprintf(_chr, "%ld ", ((int32_t)_num)); \
 ssd1306_SetCursor((_x), 10 * (_y)); \
 ssd1306_WriteString((_chr), Font_7x10); \
 } while (0);
 
+
 #define screen_show_float(_x, _y, _num, _, __) do { \
 static char _chr[128]; \
-sprintf(chr, "%f ", ((float)_num)); \
+sprintf(_chr, "%f ", ((float)_num)); \
 ssd1306_SetCursor((_x), 10 * (_y)); \
 ssd1306_WriteString((_chr), Font_7x10); \
 } while (0);
 
 #define screen_clear ssd1306_Clear
-
 
 #define screen_show_uint8 screen_show_int
 #define screen_show_uint16 screen_show_int
@@ -31,6 +31,9 @@ ssd1306_WriteString((_chr), Font_7x10); \
 #define screen_show_int8 screen_show_int
 #define screen_show_int16 screen_show_int
 #define screen_show_int32 screen_show_int
+
+#define screen_set_white() ssd1306_SetColor(White)
+#define screen_set_black() ssd1306_SetColor(Black)
 
 typedef struct MENU {
   char *name;

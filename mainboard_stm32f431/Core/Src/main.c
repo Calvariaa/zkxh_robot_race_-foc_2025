@@ -62,9 +62,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int32_t Count = 0;
-uint8_t Diretion = 0;
-int16_t accel[3], gyro[3];
+
 extern uint64_t total_time_10ms;
 /* USER CODE END 0 */
 
@@ -161,7 +159,7 @@ int main(void)
     // ssd1306_SetCursor(0, 0);
     // ssd1306_SetColor(White);
     // ssd1306_WriteString(chr, Font_7x10);
-    // sprintf(chr, "Cnt: %ld    ", Count);
+    // sprintf(chr, "Cnt: %ld    ", test1);
     // ssd1306_SetCursor(0, 10);
     // ssd1306_SetColor(White);
     // ssd1306_WriteString(chr, Font_7x10);
@@ -170,7 +168,10 @@ int main(void)
     // ssd1306_SetColor(White);
     // ssd1306_WriteString(chr, Font_7x10);
     // ssd1306_UpdateScreen();
-
+    // screen_show_string(36, 0, "[Main]");
+    // screen_show_int(0, 1, count, 3);
+    // screen_show_int(0, 2, direction, 3);
+    // ssd1306_UpdateScreen();
     interface_main();
   }
   /* USER CODE END 3 */
@@ -239,49 +240,6 @@ int _write(int file, char *ptr, int len) {
   //   return 0;
   // }
   return len;
-}
-
-
-uint16_t pit_time_1ms = 0, pit_time_2ms = 0, pit_time_5ms = 0, pit_time_10ms = 0;
-uint64_t total_time_10ms = 0;
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-
-  // 1ms tim interrupt
-  if (htim->Instance == TIM6) {
-
-    pit_time_1ms++;
-    pit_time_2ms++;
-    pit_time_5ms++;
-    pit_time_10ms++;
-
-    if (pit_time_1ms == 1) {
-      // 读取陀螺仪数据
-      if (ICM42688_ReadGyro(&hi2c2, gyro) == HAL_OK) {
-        printf("GX=%10d, GY=%10d, GZ=%10d\r\n", gyro[0], gyro[1], gyro[2]);
-      }
-
-
-      Diretion = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim2);
-      Count = (int32_t) __HAL_TIM_GET_COUNTER(&htim2) >> 2;
-      pit_time_1ms = 0;
-    }
-    if (pit_time_2ms == 2) {
-      pit_time_2ms = 0;
-    }
-    if (pit_time_5ms == 5) {
-      pit_time_5ms = 0;
-    }
-    if (pit_time_10ms == 10) {
-      pit_time_10ms = 0;
-
-      total_time_10ms++;
-    }
-
-  }
-
-
 }
 
 /* USER CODE END 4 */

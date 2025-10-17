@@ -58,9 +58,10 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 #define PWM_FREQUENCY 17000
-#define COUNT_PERIOD (TIM_CLK_MHz*1000000/PWM_FREQUENCY/2-1)
+#define COUNT_PERIOD (TIM_CLK_MHz*1000000/PWM_FREQUENCY/(PRESCALER + 1)/2-1)
 #define MOS_DEADTIME 30
 #define TIM_CLK_MHz 170
+#define PRESCALER 0
 #define LEFT_LED_Pin GPIO_PIN_2
 #define LEFT_LED_GPIO_Port GPIOB
 #define RIGHT_LED_Pin GPIO_PIN_12

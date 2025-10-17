@@ -36,10 +36,9 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME}
-        Core/Src/fast_foc.c
-        Core/Inc/fast_foc.h
+        Core/Src/foc.c
         Core/Src/encoder.c
-        Core/Inc/encoder.h)
+)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)

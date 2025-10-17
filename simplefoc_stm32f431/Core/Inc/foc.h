@@ -47,9 +47,7 @@ extern foc_t foc_L, foc_R;
 
 void foc_init(foc_t *_foc, TIM_HandleTypeDef *_htim);
 
-void foc_control(foc_t *_foc);
-
-void foc_control_fast(foc_t *_foc);
+void foc_control(foc_t *_foc, int32_t now_encoder_data);
 
 void mos_init(TIM_HandleTypeDef *_htim);
 

@@ -1212,9 +1212,9 @@ void mos_init(TIM_HandleTypeDef *_htim) {
 }
 
 void mos_all_set(const TIM_HandleTypeDef *_htim, const uint32_t _cmp_u, const uint32_t _cmp_v, const uint32_t _cmp_w) {
-  __HAL_TIM_SET_COMPARE(_htim, TIM_CHANNEL_1, _cmp_u);
+  __HAL_TIM_SET_COMPARE(_htim, TIM_CHANNEL_3, _cmp_u);
   __HAL_TIM_SET_COMPARE(_htim, TIM_CHANNEL_2, _cmp_v);
-  __HAL_TIM_SET_COMPARE(_htim, TIM_CHANNEL_3, _cmp_w);
+  __HAL_TIM_SET_COMPARE(_htim, TIM_CHANNEL_1, _cmp_w);
 }
 
 void mos_all_close(const TIM_HandleTypeDef *_htim) {
@@ -1247,6 +1247,8 @@ void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_dat
   {
     now_encoder_data = fast_foc_pointer->encoder_max_data - now_encoder_data;
   }
+
+  fast_foc_pointer->encoder_now_data = now_encoder_data;
 
   encoder_temp = now_encoder_data - fast_foc_pointer->motor_zero_location + fast_foc_pointer->calculate_value.
                  encoder_pole_pairs * traction_angle / 360; // 拟合位置   当前编码器位置 - 零点 + 牵引角
@@ -1285,7 +1287,7 @@ void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_dat
   while (location_temp_c >= FAST_FOC_ARRAY_LENGTH) {
     location_temp_c -= FAST_FOC_ARRAY_LENGTH;
   }
-
+  //
   fast_foc_pointer->ouput_duty[0] = (uint16_t) (
                                       (float) (foc_output_array[location_temp_a] - 5000) * fast_foc_pointer->
                                       calculate_value.duty_proportion *

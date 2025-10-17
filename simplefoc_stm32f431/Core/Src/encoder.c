@@ -15,12 +15,12 @@ uint16_t read_left_encoder(void) {
   uint16_t u16Data;
   HAL_SPI_Receive( &hspi1,(uint8_t *)(&u16Data), sizeof(u16Data) / sizeof(uint16_t), HAL_MAX_DELAY);
 
-  return (u16Data & 0x7fff) >> 1;
+  return (u16Data & 0x7fff);
 }
 
 uint16_t read_right_encoder(void) {
   uint16_t u16Data;
   HAL_SPI_Receive( &hspi3,(uint8_t *)(&u16Data), sizeof(u16Data) / sizeof(uint16_t), HAL_MAX_DELAY);
 
-  return (u16Data & 0x7fff) >> 1;
+  return (u16Data & 0x7fff);
 }

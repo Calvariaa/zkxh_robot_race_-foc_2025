@@ -27,7 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "fast_foc.h"
+#include "foc.h"
 #include "usbd_cdc_if.h"
 #include "encoder.h"
 /* USER CODE END Includes */
@@ -108,11 +108,11 @@ int main(void)
   mos_init(&htim1);
   mos_init(&htim8);
 
-  // foc_init(&foc_L, &htim1);
-  // foc_init(&foc_R, &htim8);
+  foc_init(&foc_L, &htim1);
+  foc_init(&foc_R, &htim8);
 
-  foc_control_fast_init(&htim1, &motor_left_foc_driver, 16383, COUNT_PERIOD, 9, 0, -1);
-  foc_control_fast_init(&htim8, &motor_right_foc_driver, 16383, COUNT_PERIOD, 9, 0, 1);
+  // foc_control_fast_init(&htim1, &motor_left_foc_driver, 32767, COUNT_PERIOD, 9, -1935, 1);
+  // foc_control_fast_init(&htim8, &motor_right_foc_driver, 32767, COUNT_PERIOD, 9, -1923, 1);
 
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim8);
@@ -127,13 +127,15 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    fake_encoder = (fake_encoder + 1) % 32767;
+    fake_encoder = (fake_encoder + 1) % 360;
 
-      printf("%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
-      motor_left_foc_driver.ouput_duty[0], motor_left_foc_driver.ouput_duty[1], motor_left_foc_driver.ouput_duty[2],
-      motor_right_foc_driver.ouput_duty[0], motor_right_foc_driver.ouput_duty[1], motor_right_foc_driver.ouput_duty[2],
-      fake_encoder, read_left_encoder(), read_right_encoder()
-      );
+      // printf("%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
+      // motor_left_foc_driver.ouput_duty[0], motor_left_foc_driver.ouput_duty[1], motor_left_foc_driver.ouput_duty[2],
+      // motor_right_foc_driver.ouput_duty[0], motor_right_foc_driver.ouput_duty[1], motor_right_foc_driver.ouput_duty[2],
+      // fake_encoder, motor_left_foc_driver.encoder_now_data, motor_right_foc_driver.encoder_now_data
+      // // fake_encoder, read_left_encoder(), read_right_encoder()
+      // );
+    foc_control(&foc_L, read_left_encoder());
   }
   /* USER CODE END 3 */
 }
@@ -205,10 +207,10 @@ int _write(int file, char *ptr, int len) {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM1) {
-    foc_control_fast(&motor_left_foc_driver, fake_encoder, 0.1, 0);
+    // foc_control_fast(&motor_left_foc_driver, read_left_encoder(), 0.1, fake_encoder);  // read_left_encoder() fake_encoder
   }
   if (htim->Instance == TIM8) {
-    foc_control_fast(&motor_right_foc_driver, fake_encoder, 0.1, 0);
+    // foc_control_fast(&motor_right_foc_driver, read_right_encoder(), 0.1, 0);
   }
 }
 

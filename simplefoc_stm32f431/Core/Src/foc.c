@@ -155,7 +155,7 @@ void foc_init(foc_t *_foc, TIM_HandleTypeDef *_htim) {
     _foc->expect_rotations = 0;
 }
 
-void foc_control(foc_t *_foc) {
+void foc_control(foc_t *_foc, int32_t now_encoder_data) {
     // _foc->set_angle += ANGLE_TO_RAD(0.4);
     _foc->set_angle += ANGLE_TO_RAD(0.08);
     if (_foc->set_angle >= M_PI * 2) {
@@ -170,7 +170,7 @@ void foc_control(foc_t *_foc) {
     _foc->turn_vector.i_d = 0;
     _foc->turn_vector.i_q = 0.1;
 
-    _foc->i_park_vector = i_park(_foc->turn_vector, _foc->set_angle);
+    _foc->i_park_vector = i_park(_foc->turn_vector, (((now_encoder_data - 1932 + 32767) % 32768) % (32768 / 9) / 32768 / 9 * M_PI * 2) );
     _foc->sector_voltage = i_clark(_foc->i_park_vector);
     _foc->sector = sector_calc(_foc->sector_voltage);
     _foc->svpwm_vector = sector_time(_foc->sector, _foc->sector_voltage);

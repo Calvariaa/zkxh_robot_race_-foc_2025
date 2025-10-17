@@ -25,6 +25,7 @@ typedef struct {
     int32_t motor_zero_location;
     int32_t motor_rotation_direction;
 
+    int32_t encoder_now_data;
     uint16_t ouput_duty[3];
 } fast_foc_struct;
 

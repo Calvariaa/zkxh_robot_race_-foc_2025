@@ -1,5 +1,8 @@
 #include "fast_foc.h"
 
+#include <math.h>
+#include <stdlib.h>
+
 #define FAST_FOC_ENCODER_MAX    (uint16_t)(65535)                                         // 定义默认磁编码器的最大值 最大支持 16位磁编码
 
 #define FAST_FOC_POLE_PAIRS     (uint16_t)(7)                                             // 定义默认的电机极对数 通过极对数计算电角度
@@ -1235,31 +1238,59 @@ void mos_all_close(const TIM_HandleTypeDef *_htim) {
 //                                  motor_left.motor_duty > 0 ? motor_left.motor_control_angle : -motor_left.motor_control_angle);
 // 备注信息
 //-------------------------------------------------------------------------------------------------------------------
-void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_data, float output_duty_max,
-                      int32_t traction_angle) {
+void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_data, float output_uq) {
   int32_t encoder_temp = 0; // 定义磁编码器数据临时变量
 
   int32_t location_temp_a = 0; // 定义三相输出位置临时变量
   int32_t location_temp_b = 0;
   int32_t location_temp_c = 0;
 
-  if (fast_foc_pointer->motor_rotation_direction == -1) // 如果方向为反向 则将编码器数据也反相
+  float output_duty_max = output_uq > 0 ? output_uq : -output_uq;
+
+  if (fast_foc_pointer->motor_rotation_direction == 1) // 如果方向为反向 则将编码器数据也反相
   {
     now_encoder_data = fast_foc_pointer->encoder_max_data - now_encoder_data;
   }
 
   fast_foc_pointer->encoder_now_data = now_encoder_data;
 
-  encoder_temp = now_encoder_data - fast_foc_pointer->motor_zero_location + fast_foc_pointer->calculate_value.
-                 encoder_pole_pairs * traction_angle / 360; // 拟合位置   当前编码器位置 - 零点 + 牵引角
+  int32_t d_angle = fast_foc_pointer->encoder_now_data - fast_foc_pointer->encoder_last_data;
+  if (abs(d_angle) > (int32_t) (0.8f * fast_foc_pointer->encoder_max_data))
+    fast_foc_pointer->rotate += (d_angle > 0) ? -1 : 1;
 
-  if (encoder_temp < 0) // 判断是否超出最大值范围
-  {
-    encoder_temp += fast_foc_pointer->encoder_max_data;
+  fast_foc_pointer->speed_raw = d_angle + (fast_foc_pointer->rotate - fast_foc_pointer->rotate_last) * fast_foc_pointer
+                                ->encoder_max_data;
+
+  fast_foc_pointer->rotate_last = fast_foc_pointer->rotate;
+  fast_foc_pointer->encoder_last_data = fast_foc_pointer->encoder_now_data;
+
+  // 1ms算一次
+  fast_foc_pointer->speed_actual_sum += fast_foc_pointer->speed_raw;
+  if (++fast_foc_pointer->speed_calc_time >= PWM_FREQUENCY / 1000) {
+    fast_foc_pointer->speed_calc_time = 0;
+    fast_foc_pointer->speed_filtered = (int32_t) (
+      0.8f * (float) fast_foc_pointer->speed_actual_sum + (1.0f - 0.8f) * (float) fast_foc_pointer->
+      speed_actual_result);
+    fast_foc_pointer->speed_actual_result = fast_foc_pointer->speed_actual_sum;
+    fast_foc_pointer->speed_actual_sum = 0;
   }
-  if (encoder_temp >= fast_foc_pointer->encoder_max_data) {
-    encoder_temp -= fast_foc_pointer->encoder_max_data;
-  }
+
+
+  // const uint8_t preact_angle = (uint8_t) (func_limit_ab(
+  //   (func_abs(fast_foc_pointer->speed_filtered) / (FOC_MOTOR_KV_NUM * 12.0f)), 0.0f,
+  //   1.0f) * (float) fast_foc_pointer->preact_angle);
+
+  const uint8_t preact_angle = 0;
+
+
+  encoder_temp = (now_encoder_data - fast_foc_pointer->motor_zero_location - fast_foc_pointer->calculate_value.
+                  encoder_pole_pairs *
+                  (output_uq > 0
+                     ? (fast_foc_pointer->traction_angle + preact_angle)
+                     : -(fast_foc_pointer->traction_angle + preact_angle)
+                  ) / 360 + fast_foc_pointer->encoder_max_data)
+                 % fast_foc_pointer->encoder_max_data; // 拟合位置   当前编码器位置 - 零点 + 牵引角
+
 
   encoder_temp = encoder_temp % fast_foc_pointer->calculate_value.encoder_pole_pairs; // 计算电角度位置
 
@@ -1268,40 +1299,26 @@ void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_dat
 
   location_temp_a = (int32_t) encoder_temp; // 获取A相查表位置
 
-  location_temp_b = (int32_t) encoder_temp - FAST_FOC_PHASE_OFFSET; // 获取B相查表位置
+  location_temp_b = (int32_t) (encoder_temp - FAST_FOC_PHASE_OFFSET + FAST_FOC_ARRAY_LENGTH) % FAST_FOC_ARRAY_LENGTH;
+  // 获取B相查表位置
 
-  while (location_temp_b < 0) // 判断是否超出最大值范围
-  {
-    location_temp_b += FAST_FOC_ARRAY_LENGTH;
-  }
-  while (location_temp_b >= FAST_FOC_ARRAY_LENGTH) {
-    location_temp_b -= FAST_FOC_ARRAY_LENGTH;
-  }
+  location_temp_c = (int32_t) (encoder_temp + FAST_FOC_PHASE_OFFSET + FAST_FOC_ARRAY_LENGTH) % FAST_FOC_ARRAY_LENGTH;
+  // 获取C相查表位置
 
-  location_temp_c = (int32_t) encoder_temp + FAST_FOC_PHASE_OFFSET; // 获取C相查表位置
-
-  while (location_temp_c < 0) // 判断是否超出最大值范围
-  {
-    location_temp_c += FAST_FOC_ARRAY_LENGTH;
-  }
-  while (location_temp_c >= FAST_FOC_ARRAY_LENGTH) {
-    location_temp_c -= FAST_FOC_ARRAY_LENGTH;
-  }
-  //
   fast_foc_pointer->ouput_duty[0] = (uint16_t) (
-                                      (float) (foc_output_array[location_temp_a] - 5000) * fast_foc_pointer->
-                                      calculate_value.duty_proportion *
-                                      output_duty_max + COUNT_PERIOD / 2); // A相占空比缩放并限幅
+    (float) (foc_output_array[location_temp_a] - 5000) * fast_foc_pointer->
+    calculate_value.duty_proportion *
+    output_duty_max + COUNT_PERIOD / 2); // A相占空比缩放并限幅
 
   fast_foc_pointer->ouput_duty[1] = (uint16_t) (
-                                      (float) (foc_output_array[location_temp_b] - 5000) * fast_foc_pointer->
-                                      calculate_value.duty_proportion *
-                                      output_duty_max + COUNT_PERIOD / 2); // B相占空比缩放并限幅
+    (float) (foc_output_array[location_temp_b] - 5000) * fast_foc_pointer->
+    calculate_value.duty_proportion *
+    output_duty_max + COUNT_PERIOD / 2); // B相占空比缩放并限幅
 
   fast_foc_pointer->ouput_duty[2] = (uint16_t) (
-                                      (float) (foc_output_array[location_temp_c] - 5000) * fast_foc_pointer->
-                                      calculate_value.duty_proportion *
-                                      output_duty_max + COUNT_PERIOD / 2); // C相占空比缩放并限幅
+    (float) (foc_output_array[location_temp_c] - 5000) * fast_foc_pointer->
+    calculate_value.duty_proportion *
+    output_duty_max + COUNT_PERIOD / 2); // C相占空比缩放并限幅
 
   mos_all_set(fast_foc_pointer->htim, fast_foc_pointer->ouput_duty[0], fast_foc_pointer->ouput_duty[1],
               fast_foc_pointer->ouput_duty[2]);
@@ -1322,7 +1339,7 @@ void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_dat
 //-------------------------------------------------------------------------------------------------------------------
 void foc_control_fast_init(TIM_HandleTypeDef *htim, fast_foc_struct *fast_foc_pointer, int32_t encoder_max_data,
                            int32_t duty_max_data, uint32_t motor_pole_pairs, int32_t zero_location,
-                           int32_t rotation_direction) {
+                           int32_t rotation_direction, int16_t traction_angle, int16_t preact_angle) {
   fast_foc_pointer->htim = htim;
 
   fast_foc_pointer->encoder_max_data = encoder_max_data; // 保存当前磁编码器的最大值
@@ -1334,6 +1351,10 @@ void foc_control_fast_init(TIM_HandleTypeDef *htim, fast_foc_struct *fast_foc_po
   fast_foc_pointer->motor_zero_location = zero_location; // 保存当前电机的零点位置
 
   fast_foc_pointer->motor_rotation_direction = rotation_direction; // 保存当前电机的旋转方向
+
+  fast_foc_pointer->traction_angle = traction_angle;
+
+  fast_foc_pointer->preact_angle = preact_angle;
 
   fast_foc_pointer->calculate_value.encoder_pole_pairs = encoder_max_data / motor_pole_pairs;
   // 计算当前电机一圈电角度对应的磁编码器数值范围

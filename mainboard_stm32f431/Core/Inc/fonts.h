@@ -1,8 +1,8 @@
-#include "stdint.h"
-
 
 #ifndef Fonts
 #define Fonts
+
+#include "stdint.h"
 
 //
 // Structure om font te definieren

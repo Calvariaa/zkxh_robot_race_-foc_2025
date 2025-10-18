@@ -125,53 +125,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    // printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n ",
-    // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13),
-    // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14),
-    // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_15),
-    // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4),
-    // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6),
-    // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5),
-    // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7),
-    // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14),
-    // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6),
-    // HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10),
-    // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3),
-    // HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_11),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5),
-    //
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12),
-    // HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13),
-    // HAL_GPIO_ReadPin(GPIOG, GPIO_PIN_10)
-    //
-    // );
 
-    // sprintf(chr, "10ms: %ld    ", total_time_10ms);
-    // ssd1306_SetCursor(0, 0);
-    // ssd1306_SetColor(White);
-    // ssd1306_WriteString(chr, Font_7x10);
-    // sprintf(chr, "Cnt: %ld    ", test1);
-    // ssd1306_SetCursor(0, 10);
-    // ssd1306_SetColor(White);
-    // ssd1306_WriteString(chr, Font_7x10);
-    // sprintf(chr, "gyro_z: %10d ", gyro[2]);
-    // ssd1306_SetCursor(0, 20);
-    // ssd1306_SetColor(White);
-    // ssd1306_WriteString(chr, Font_7x10);
-    // ssd1306_UpdateScreen();
-    // screen_show_string(36, 0, "[Main]");
-    // screen_show_int(0, 1, count, 3);
-    // screen_show_int(0, 2, direction, 3);
-    // ssd1306_UpdateScreen();
     interface_main();
   }
   /* USER CODE END 3 */

@@ -2,7 +2,9 @@
 #include "i2c.h"
 #include "tim.h"
 #include "icm42688.h"
-#include  "stdio.h"
+#include "stdio.h"
+#include "usart.h"
+
 
 key_t key;
 
@@ -10,6 +12,8 @@ int32_t count = 0;
 int32_t last_count = 0;
 uint8_t direction = 0;
 int16_t accel[3], gyro[3];
+int16_t send_data[4];
+int16_t actual_speed[2];
 
 uint16_t pit_time_1ms = 0, pit_time_2ms = 0, pit_time_5ms = 0, pit_time_10ms = 0;
 uint64_t total_time_10ms = 0;
@@ -47,6 +51,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     }
 }
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    if (huart->Instance == USART1) {
+        HAL_UART_Receive_IT(&huart1, (uint8_t *) actual_speed, sizeof(actual_speed) / sizeof(int16_t));
+    }
+}
+
+void set_speed(void) {
+    HAL_UART_Transmit_IT(&huart1, (uint8_t *)send_data, sizeof(send_data)/sizeof(int16_t));
+}
+
 void key_scan(void) {
     key.state = HAL_GPIO_ReadPin(PRESS_GPIO_Port,PRESS_Pin);
 
@@ -76,6 +90,8 @@ void key_scan(void) {
                     key.key_short = 1;
                 }
             }
+            break;
+        default:
             break;
     }
 }

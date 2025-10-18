@@ -38,7 +38,9 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 add_executable(${CMAKE_PROJECT_NAME}
         Core/Src/icm42688.c
         Core/Src/Interface.c
-        Core/Src/control.c)
+        Core/Src/control.c
+        Core/Src/gray_sensor.c
+        Core/Src/fifo.c)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)

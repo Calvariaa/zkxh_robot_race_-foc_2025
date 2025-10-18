@@ -27,7 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "foc.h"
+#include "fast_foc.h"
 #include "usbd_cdc_if.h"
 #include "encoder.h"
 /* USER CODE END Includes */
@@ -55,6 +55,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -70,9 +71,7 @@ uint16_t encoder_send = 0xffff;
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)
-{
-
+int main(void) {
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -108,11 +107,11 @@ int main(void)
   mos_init(&htim1);
   mos_init(&htim8);
 
-  foc_init(&foc_L, &htim1);
-  foc_init(&foc_R, &htim8);
+  // foc_init(&foc_L, &htim1);
+  // foc_init(&foc_R, &htim8);
 
-  // foc_control_fast_init(&htim1, &motor_left_foc_driver, 32767, COUNT_PERIOD, 9, -1935, 1);
-  // foc_control_fast_init(&htim8, &motor_right_foc_driver, 32767, COUNT_PERIOD, 9, -1923, 1);
+  foc_control_fast_init(&htim1, &motor_left_foc_driver, 16384, COUNT_PERIOD, 10, 1092, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
+  foc_control_fast_init(&htim8, &motor_right_foc_driver, 16384, COUNT_PERIOD, 10, 589, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
 
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim8);
@@ -127,15 +126,21 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    fake_encoder = (fake_encoder + 1) % 360;
+    fake_encoder = (fake_encoder + 1) % 16384;
 
-      // printf("%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
-      // motor_left_foc_driver.ouput_duty[0], motor_left_foc_driver.ouput_duty[1], motor_left_foc_driver.ouput_duty[2],
-      // motor_right_foc_driver.ouput_duty[0], motor_right_foc_driver.ouput_duty[1], motor_right_foc_driver.ouput_duty[2],
-      // fake_encoder, motor_left_foc_driver.encoder_now_data, motor_right_foc_driver.encoder_now_data
-      // // fake_encoder, read_left_encoder(), read_right_encoder()
-      // );
-    foc_control(&foc_L, read_left_encoder());
+    printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
+           motor_left_foc_driver.ouput_duty[0], motor_left_foc_driver.ouput_duty[1],
+           motor_left_foc_driver.ouput_duty[2],
+           motor_right_foc_driver.ouput_duty[0], motor_right_foc_driver.ouput_duty[1],
+           motor_right_foc_driver.ouput_duty[2],
+           fake_encoder,  (int16_t)motor_left_foc_driver.encoder_now_data,  (int16_t)motor_right_foc_driver.encoder_now_data,
+           (int16_t)motor_left_foc_driver.rotate, (int16_t)motor_right_foc_driver.rotate,
+           (int16_t)motor_left_foc_driver.speed_raw, (int16_t)motor_right_foc_driver.speed_raw,
+           (int16_t)motor_left_foc_driver.speed_filtered, (int16_t)motor_right_foc_driver.speed_filtered
+
+           // fake_encoder, read_left_encoder(), read_right_encoder()
+    );
+    // HAL_Delay(1);
   }
   /* USER CODE END 3 */
 }
@@ -144,8 +149,7 @@ int main(void)
   * @brief System Clock Configuration
   * @retval None
   */
-void SystemClock_Config(void)
-{
+void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
@@ -156,7 +160,7 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSI48;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSI48;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
@@ -167,22 +171,20 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV4;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
-  {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) {
     Error_Handler();
   }
 }
@@ -207,10 +209,11 @@ int _write(int file, char *ptr, int len) {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM1) {
-    // foc_control_fast(&motor_left_foc_driver, read_left_encoder(), 0.1, fake_encoder);  // read_left_encoder() fake_encoder
+    foc_control_fast(&motor_left_foc_driver, read_left_encoder(), 0.2f);
   }
+
   if (htim->Instance == TIM8) {
-    // foc_control_fast(&motor_right_foc_driver, read_right_encoder(), 0.1, 0);
+    foc_control_fast(&motor_right_foc_driver, read_right_encoder(), 0.2f);
   }
 }
 
@@ -220,8 +223,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
-void Error_Handler(void)
-{
+void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
@@ -238,8 +240,7 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(uint8_t *file, uint32_t line)
-{
+void assert_failed(uint8_t *file, uint32_t line) {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

@@ -57,7 +57,7 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define PWM_FREQUENCY 17000
+#define PWM_FREQUENCY 20000
 #define COUNT_PERIOD (TIM_CLK_MHz*1000000/PWM_FREQUENCY/(PRESCALER + 1)/2-1)
 #define MOS_DEADTIME 30
 #define TIM_CLK_MHz 170

@@ -1239,13 +1239,13 @@ void mos_all_close(const TIM_HandleTypeDef *_htim) {
 // 备注信息
 //-------------------------------------------------------------------------------------------------------------------
 void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_data, float output_uq) {
-  int32_t encoder_temp = 0; // 定义磁编码器数据临时变量
+  register int32_t encoder_temp asm("r0"); // 定义磁编码器数据临时变量
 
   int32_t location_temp_a = 0; // 定义三相输出位置临时变量
   int32_t location_temp_b = 0;
   int32_t location_temp_c = 0;
 
-  float output_duty_max = output_uq > 0 ? output_uq : -output_uq;
+  float output_duty_max = fabsf(output_uq);
 
   if (fast_foc_pointer->motor_rotation_direction == 1) // 如果方向为反向 则将编码器数据也反相
   {
@@ -1268,26 +1268,27 @@ void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_dat
   fast_foc_pointer->speed_actual_sum += fast_foc_pointer->speed_raw;
   if (++fast_foc_pointer->speed_calc_time >= PWM_FREQUENCY / 1000) {
     fast_foc_pointer->speed_calc_time = 0;
-    fast_foc_pointer->speed_filtered = (int32_t) (
-      0.8f * (float) fast_foc_pointer->speed_actual_sum + (1.0f - 0.8f) * (float) fast_foc_pointer->
-      speed_actual_result);
+
+    fast_foc_pointer->speed_filtered = (
+        8 * fast_foc_pointer->speed_actual_sum +
+        2 * fast_foc_pointer->speed_actual_result) / 10;
     fast_foc_pointer->speed_actual_result = fast_foc_pointer->speed_actual_sum;
     fast_foc_pointer->speed_actual_sum = 0;
   }
 
 
-  // const uint8_t preact_angle = (uint8_t) (func_limit_ab(
-  //   (func_abs(fast_foc_pointer->speed_filtered) / (FOC_MOTOR_KV_NUM * 12.0f)), 0.0f,
-  //   1.0f) * (float) fast_foc_pointer->preact_angle);
 
-  const uint8_t preact_angle = 0;
+  const uint8_t preact_angle = (uint8_t) (func_limit_ab(
+    (abs(fast_foc_pointer->speed_filtered) / (FOC_MOTOR_KV_NUM * 12.0f)), 0.0f,
+    1.0f) * (float) fast_foc_pointer->preact_angle);
 
+  // const uint8_t preact_angle = 30;
 
   encoder_temp = (now_encoder_data - fast_foc_pointer->motor_zero_location - fast_foc_pointer->calculate_value.
                   encoder_pole_pairs *
                   (output_uq > 0
-                     ? (fast_foc_pointer->traction_angle + preact_angle)
-                     : -(fast_foc_pointer->traction_angle + preact_angle)
+                     ? (fast_foc_pointer->traction_angle - preact_angle)
+                     : -(fast_foc_pointer->traction_angle - preact_angle)
                   ) / 360 + fast_foc_pointer->encoder_max_data)
                  % fast_foc_pointer->encoder_max_data; // 拟合位置   当前编码器位置 - 零点 + 牵引角
 

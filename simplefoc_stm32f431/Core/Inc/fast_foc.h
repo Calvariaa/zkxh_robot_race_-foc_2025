@@ -5,7 +5,7 @@
 #include "tim.h"
 #include "encoder.h"
 
-#define  FOC_MOTOR_KV_NUM               (650.0f)        // 驱动的电机KV值  用于超前角的计算  大幅度减小 高转速时的发热情况
+#define  FOC_MOTOR_KV_NUM               (650)        // 驱动的电机KV值  用于超前角的计算  大幅度减小 高转速时的发热情况
 
 #define  FOC_TRACTION_ANGLE     (90.0f)         // 快速FOC模式下   正转的牵引角度，默认为90°
 

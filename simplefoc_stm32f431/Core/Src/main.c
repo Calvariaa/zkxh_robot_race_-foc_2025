@@ -21,7 +21,6 @@
 #include "adc.h"
 #include "spi.h"
 #include "tim.h"
-#include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
 
@@ -100,9 +99,10 @@ int main(void)
   MX_SPI3_Init();
   MX_TIM8_Init();
   MX_USB_Device_Init();
-  MX_USART1_UART_Init();
   MX_ADC1_Init();
-  MX_USART3_UART_Init();
+  MX_TIM2_Init();
+  MX_TIM4_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
 
   mos_init(&htim1);
@@ -111,8 +111,8 @@ int main(void)
   // foc_init(&foc_L, &htim1);
   // foc_init(&foc_R, &htim8);
 
-  foc_control_fast_init(&htim1, &motor_left_foc_driver, 16383, COUNT_PERIOD, 10, 1030, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
-  foc_control_fast_init(&htim8, &motor_right_foc_driver, 16383, COUNT_PERIOD, 10, 1370, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
+  foc_control_fast_init(&htim1, &motor_left_foc_driver, 16383, PWM_COUNT_PERIOD, 10, 1030, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
+  foc_control_fast_init(&htim8, &motor_right_foc_driver, 16383, PWM_COUNT_PERIOD, 10, 1370, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
 
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim8);

@@ -58,16 +58,27 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 #define PWM_FREQUENCY 20000
-#define COUNT_PERIOD (TIM_CLK_MHz*1000000/PWM_FREQUENCY/(PRESCALER + 1)/2-1)
+#define PWM_COUNT_PERIOD (TIM_CLK_MHz*1000000/PWM_FREQUENCY/(PWM_PRESCALER + 1)/2-1)
+#define PWM_PRESCALER 0
 #define MOS_DEADTIME 30
 #define TIM_CLK_MHz 170
-#define PRESCALER 0
+#define COM_FREQUENCY 10000
+#define COM_COUNT_PERIOD (TIM_CLK_MHz*1000000/COM_FREQUENCY/(COM_PRESCALER + 1)-1)
+#define COM_PRESCALER 0
+#define L_TX_Pin GPIO_PIN_3
+#define L_TX_GPIO_Port GPIOA
 #define LEFT_LED_Pin GPIO_PIN_2
 #define LEFT_LED_GPIO_Port GPIOB
+#define R_TX_Pin GPIO_PIN_10
+#define R_TX_GPIO_Port GPIOB
+#define R_RX_Pin GPIO_PIN_11
+#define R_RX_GPIO_Port GPIOB
 #define RIGHT_LED_Pin GPIO_PIN_12
 #define RIGHT_LED_GPIO_Port GPIOB
 #define LED_Pin GPIO_PIN_6
 #define LED_GPIO_Port GPIOC
+#define L_RX_Pin GPIO_PIN_7
+#define L_RX_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

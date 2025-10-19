@@ -30,7 +30,6 @@ target_sources(stm32cubemx INTERFACE
     ../../Core/Src/dma.c
     ../../Core/Src/i2c.c
     ../../Core/Src/tim.c
-    ../../Core/Src/usart.c
     ../../Core/Src/stm32g4xx_it.c
     ../../Core/Src/stm32g4xx_hal_msp.c
     ../../USB_Device/Target/usbd_conf.c
@@ -57,8 +56,6 @@ target_sources(stm32cubemx INTERFACE
     ../../Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_i2c_ex.c
     ../../Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim.c
     ../../Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim_ex.c
-    ../../Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.c
-    ../../Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c
     ../../Core/Src/system_stm32g4xx.c
     ../../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c
     ../../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c

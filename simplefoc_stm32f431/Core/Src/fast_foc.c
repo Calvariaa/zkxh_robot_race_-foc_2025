@@ -1309,17 +1309,17 @@ void foc_control_fast(fast_foc_struct *fast_foc_pointer, int32_t now_encoder_dat
   fast_foc_pointer->ouput_duty[0] = (uint16_t) (
     (float) (foc_output_array[location_temp_a] - 5000) * fast_foc_pointer->
     calculate_value.duty_proportion *
-    output_duty_max + COUNT_PERIOD / 2); // A相占空比缩放并限幅
+    output_duty_max + PWM_COUNT_PERIOD / 2); // A相占空比缩放并限幅
 
   fast_foc_pointer->ouput_duty[1] = (uint16_t) (
     (float) (foc_output_array[location_temp_b] - 5000) * fast_foc_pointer->
     calculate_value.duty_proportion *
-    output_duty_max + COUNT_PERIOD / 2); // B相占空比缩放并限幅
+    output_duty_max + PWM_COUNT_PERIOD / 2); // B相占空比缩放并限幅
 
   fast_foc_pointer->ouput_duty[2] = (uint16_t) (
     (float) (foc_output_array[location_temp_c] - 5000) * fast_foc_pointer->
     calculate_value.duty_proportion *
-    output_duty_max + COUNT_PERIOD / 2); // C相占空比缩放并限幅
+    output_duty_max + PWM_COUNT_PERIOD / 2); // C相占空比缩放并限幅
 
   mos_all_set(fast_foc_pointer->htim, fast_foc_pointer->ouput_duty[0], fast_foc_pointer->ouput_duty[1],
               fast_foc_pointer->ouput_duty[2]);

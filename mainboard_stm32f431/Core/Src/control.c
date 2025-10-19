@@ -3,10 +3,9 @@
 #include "tim.h"
 #include "icm42688.h"
 #include "stdio.h"
-#include "usart.h"
 
 
-key_t key;
+key_struct_t key;
 
 int32_t count = 0;
 int32_t last_count = 0;
@@ -50,16 +49,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
         }
     }
 }
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    if (huart->Instance == USART1) {
-        HAL_UART_Receive_IT(&huart1, (uint8_t *) actual_speed, sizeof(actual_speed) / sizeof(int16_t));
-    }
-}
-
-void set_speed(void) {
-    HAL_UART_Transmit_IT(&huart1, (uint8_t *)send_data, sizeof(send_data)/sizeof(int16_t));
-}
+//
+// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+//     if (huart->Instance == USART1) {
+//         HAL_UART_Receive_IT(&huart1, (uint8_t *) actual_speed, sizeof(actual_speed) / sizeof(int16_t));
+//     }
+// }
+//
+// void set_speed(void) {
+//     HAL_UART_Transmit_IT(&huart1, (uint8_t *)send_data, sizeof(send_data)/sizeof(int16_t));
+// }
 
 void key_scan(void) {
     key.state = HAL_GPIO_ReadPin(PRESS_GPIO_Port,PRESS_Pin);

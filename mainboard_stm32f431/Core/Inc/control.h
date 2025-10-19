@@ -11,9 +11,9 @@ typedef struct
     bool key_short;
     uint16_t time;
     bool key_long;
-}key_t;
+}key_struct_t;
 
-extern key_t key;
+extern key_struct_t key;
 
 extern int32_t count;
 extern int32_t last_count;

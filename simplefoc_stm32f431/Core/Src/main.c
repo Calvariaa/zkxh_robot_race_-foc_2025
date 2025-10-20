@@ -117,10 +117,21 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim8);
 
+  // HAL_TIM_Base_Start_IT(&htim2);
+  // HAL_TIM_Base_Start_IT(&htim15);
+
+  HAL_TIM_PWM_Start(&htim15,TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_3);
+
+  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, COM_COUNT_PERIOD / 2);  // L_TX
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, COM_COUNT_PERIOD / 2);  // R_TX
   while (1) {
     /* USER CODE END WHILE */
 

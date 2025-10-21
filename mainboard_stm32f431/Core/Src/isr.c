@@ -4,10 +4,11 @@
 
 #include "isr.h"
 #include "control.h"
-#include "mpu6050.h"
+// #include "mpu6050.h"
 #include "i2c.h"
 #include "stdio.h"
-#include "data.h"
+// #include "data.h"
+#include "gray_sensor.h"
 #include "icm42688.h"
 
 pwm_capture_t L_RX_capture = PWM_CAPTURE_T_INIT(TIM15, TIM_CHANNEL_1, HAL_TIM_ACTIVE_CHANNEL_1);
@@ -15,10 +16,12 @@ pwm_capture_t R_RX_capture = PWM_CAPTURE_T_INIT(TIM15, TIM_CHANNEL_2, HAL_TIM_AC
 
 speed_struct_t speed_struct = {0};
 
-int clip(int x, int low, int up)
-{
-  return x > up ? up : x < low ? low
-                               : x;
+int clip(int x, int low, int up) {
+  return x > up
+           ? up
+           : x < low
+               ? low
+               : x;
 }
 
 // PWM捕获处理函数
@@ -83,12 +86,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
       speed_struct.left = (L_RX_capture.duty * (L_RX_capture.freq / 500.f) * 2 - 0.9958f);
       speed_struct.right = (R_RX_capture.duty * (R_RX_capture.freq / 500.f) * 2 - 0.9958f);
 
+      read_gray_sensor();
+
       // 读取陀螺仪数据
       // MPU6050_Read_Gyro(&hi2c2, &MPU6050);
       ICM42688_ReadGyro(&hi2c2, gyro);
 
-      __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, clip((gyro[2] + 20000) * TX_COUNT_PERIOD / 40000, 0, TX_COUNT_PERIOD-1)); // L_TX
-      __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, clip((gyro[2] + 20000) * TX_COUNT_PERIOD / 40000, 0, TX_COUNT_PERIOD-1)); // R_TX
+      int16_t error = gyro[2] + (int16_t)calc_left_right_error() * 500;
+
+      if (control_state != STOP) {
+        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1,
+                              clip((error + 20000) * TX_COUNT_PERIOD / 40000, 0, TX_COUNT_PERIOD-1)); // L_TX
+        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2,
+                              clip((error + 20000) * TX_COUNT_PERIOD / 40000, 0, TX_COUNT_PERIOD-1)); // R_TX
+      } else {
+        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1,
+                              TX_COUNT_PERIOD / 2); // L_TX
+        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2,
+                              TX_COUNT_PERIOD / 2); // R_TX
+      }
 
       // direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim2);
       count = (int32_t) (__HAL_TIM_GET_COUNTER(&htim2) + 2) >> 2;
@@ -101,4 +117,3 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     }
   }
 }
-

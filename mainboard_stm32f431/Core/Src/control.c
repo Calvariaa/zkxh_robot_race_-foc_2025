@@ -6,6 +6,7 @@
 
 int16_t accel[3], gyro[3];
 
+control_state_t control_state = START;
 key_struct_t key = {0};
 
 void key_scan(void) {

@@ -4,6 +4,13 @@
 #include "stdint.h"
 #include "stdbool.h"
 
+typedef enum {
+  STOP = 0,
+  START_ZEBRA,
+  START,
+  STOP_ZEBRA
+} control_state_t;
+
 typedef struct {
   uint8_t step;
   bool state;
@@ -14,6 +21,7 @@ typedef struct {
 
 extern int16_t accel[3], gyro[3];
 
+extern control_state_t control_state;
 extern key_struct_t key;
 
 extern int32_t count;

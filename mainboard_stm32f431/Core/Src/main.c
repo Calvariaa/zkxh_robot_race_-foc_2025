@@ -28,7 +28,7 @@
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
 #include "ssd1306.h"
-#include "mpu6050.h"
+#include "icm42688.h"
 #include "interface.h"
 /* USER CODE END Includes */
 
@@ -109,7 +109,7 @@ int main(void)
 
   HAL_Delay(100);
   // 初始化ICM42688
-  MPU6050_Init(&hi2c2);
+  ICM42688_Init(&hi2c2);
 
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 

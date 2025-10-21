@@ -71,7 +71,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (duty < -0.3f || duty > 0.3f) duty = 0;
     else if (duty < -0.25f) duty = -0.25f;
     else if (duty > 0.25f) duty = 0.25f;
-    speed_struct.left = duty * 3.8f - 0.004f;
+    speed_struct.left = duty * 3.8f - 0.003f;
 
     foc_control_fast(&motor_left_foc_driver, read_left_encoder(), speed_struct.left);
   }
@@ -85,7 +85,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (duty < -0.3f || duty > 0.3f) duty = 0;
     else if (duty < -0.25f) duty = -0.25f;
     else if (duty > 0.25f) duty = 0.25f;
-    speed_struct.right = duty * 3.8f - 0.004f;
+    speed_struct.right = duty * 3.8f - 0.003f;
 
     foc_control_fast(&motor_right_foc_driver, read_right_encoder(), speed_struct.right);
   }

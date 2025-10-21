@@ -36,7 +36,7 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME}
-        Core/Src/mpu6050.c
+        Core/Src/icm42688.c
         Core/Src/Interface.c
         Core/Src/control.c
         Core/Src/gray_sensor.c

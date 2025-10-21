@@ -248,7 +248,7 @@ void get_sensor(void) {
     // screen_show_uint32(0, 2, timer_1s, 10);
     // screen_show_uint16(0, 3, (uint16_t)uart_timer_update, 6);
     // screen_show_uint16(0, 4, (uint16_t)uart_get_count, 6);
-    screen_show_float(0, 1, MPU6050.Gz, 5, 3);
+    screen_show_float(0, 1, gyro[2], 5, 3);
 
     screen_show_float(64, 2, speed_struct.left, 5, 3);
     screen_show_float(64, 3, speed_struct.right, 5, 3);

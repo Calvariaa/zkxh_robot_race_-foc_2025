@@ -8,6 +8,7 @@
 #include "i2c.h"
 #include "stdio.h"
 #include "data.h"
+#include "icm42688.h"
 
 pwm_capture_t L_RX_capture = PWM_CAPTURE_T_INIT(TIM15, TIM_CHANNEL_1, HAL_TIM_ACTIVE_CHANNEL_1);
 pwm_capture_t R_RX_capture = PWM_CAPTURE_T_INIT(TIM15, TIM_CHANNEL_2, HAL_TIM_ACTIVE_CHANNEL_2);
@@ -83,10 +84,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
       speed_struct.right = (R_RX_capture.duty * (R_RX_capture.freq / 500.f) * 2 - 0.9958f);
 
       // 读取陀螺仪数据
-      MPU6050_Read_Gyro(&hi2c2, &MPU6050);
+      // MPU6050_Read_Gyro(&hi2c2, &MPU6050);
+      ICM42688_ReadGyro(&hi2c2, gyro);
 
-      __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, clip((MPU6050.Gz + 1000) * TX_COUNT_PERIOD / 2000, 0, TX_COUNT_PERIOD-1)); // L_TX
-      __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, clip((MPU6050.Gz + 1000) * TX_COUNT_PERIOD / 2000, 0, TX_COUNT_PERIOD-1)); // R_TX
+      __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, clip((gyro[2] + 20000) * TX_COUNT_PERIOD / 40000, 0, TX_COUNT_PERIOD-1)); // L_TX
+      __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, clip((gyro[2] + 20000) * TX_COUNT_PERIOD / 40000, 0, TX_COUNT_PERIOD-1)); // R_TX
 
       // direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim2);
       count = (int32_t) (__HAL_TIM_GET_COUNTER(&htim2) + 2) >> 2;

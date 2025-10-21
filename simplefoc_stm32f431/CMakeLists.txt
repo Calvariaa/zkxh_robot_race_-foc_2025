@@ -38,6 +38,7 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 add_executable(${CMAKE_PROJECT_NAME}
         Core/Src/encoder.c
         Core/Src/fast_foc.c
+        Core/Src/isr.c
 
 )
 

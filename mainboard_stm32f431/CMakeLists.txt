@@ -40,7 +40,9 @@ add_executable(${CMAKE_PROJECT_NAME}
         Core/Src/Interface.c
         Core/Src/control.c
         Core/Src/gray_sensor.c
-        Core/Src/fifo.c)
+        Core/Src/fifo.c
+        Core/Src/isr.c
+)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)

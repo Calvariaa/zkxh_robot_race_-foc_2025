@@ -57,28 +57,33 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define RX_COUNT_PERIOD 65535
 #define PWM_FREQUENCY 20000
+#define RX_PRESCALER 7
 #define PWM_COUNT_PERIOD (TIM_CLK_MHz*1000000/PWM_FREQUENCY/(PWM_PRESCALER + 1)/2-1)
-#define PWM_PRESCALER 0
 #define MOS_DEADTIME 30
 #define TIM_CLK_MHz 170
-#define COM_FREQUENCY 10000
-#define COM_COUNT_PERIOD (TIM_CLK_MHz*1000000/COM_FREQUENCY/(COM_PRESCALER + 1)-1)
-#define COM_PRESCALER 0
-#define L_TX_Pin GPIO_PIN_3
-#define L_TX_GPIO_Port GPIOA
+#define PWM_PRESCALER 0
+#define TX_COUNT_PERIOD (TIM_CLK_MHz*1000000/TX_FREQUENCY/(TX_PRESCALER + 1)-1)
+#define TX_PRESCALER 170-1
+#define TX_FREQUENCY 500
+#define ISR_PRESCALER 170-1
+#define ISR_COUNT_PERIOD (TIM_CLK_MHz*1000000/ISR_FREQUENCY/(ISR_PRESCALER + 1)-1)
+#define ISR_FREQUENCY 1000
+#define L_L_Pin GPIO_PIN_3
+#define L_L_GPIO_Port GPIOA
 #define LEFT_LED_Pin GPIO_PIN_2
 #define LEFT_LED_GPIO_Port GPIOB
-#define R_TX_Pin GPIO_PIN_10
-#define R_TX_GPIO_Port GPIOB
-#define R_RX_Pin GPIO_PIN_11
-#define R_RX_GPIO_Port GPIOB
+#define R_L_Pin GPIO_PIN_10
+#define R_L_GPIO_Port GPIOB
+#define R_R_Pin GPIO_PIN_11
+#define R_R_GPIO_Port GPIOB
 #define RIGHT_LED_Pin GPIO_PIN_12
 #define RIGHT_LED_GPIO_Port GPIOB
 #define LED_Pin GPIO_PIN_6
 #define LED_GPIO_Port GPIOC
-#define L_RX_Pin GPIO_PIN_7
-#define L_RX_GPIO_Port GPIOB
+#define L_R_Pin GPIO_PIN_7
+#define L_R_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

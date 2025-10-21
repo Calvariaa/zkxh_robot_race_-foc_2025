@@ -26,9 +26,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <tgmath.h>
+
 #include "fast_foc.h"
 #include "usbd_cdc_if.h"
-#include "encoder.h"
+#include "isr.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -103,6 +105,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM4_Init();
   MX_TIM15_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
   mos_init(&htim1);
@@ -117,21 +120,20 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_Base_Start_IT(&htim8);
 
-  // HAL_TIM_Base_Start_IT(&htim2);
-  // HAL_TIM_Base_Start_IT(&htim15);
+  HAL_TIM_Base_Start_IT(&htim6);
 
   HAL_TIM_PWM_Start(&htim15,TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
 
-  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, COM_COUNT_PERIOD / 2);  // L_TX
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, COM_COUNT_PERIOD / 2);  // R_TX
+  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, TX_COUNT_PERIOD / 2);  // L_TX
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, TX_COUNT_PERIOD / 2);  // R_TX
   while (1) {
     /* USER CODE END WHILE */
 
@@ -139,18 +141,26 @@ int main(void)
 
     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 
-    printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
-           motor_left_foc_driver.ouput_duty[0], motor_left_foc_driver.ouput_duty[1],
-           motor_left_foc_driver.ouput_duty[2],
-           motor_right_foc_driver.ouput_duty[0], motor_right_foc_driver.ouput_duty[1],
-           motor_right_foc_driver.ouput_duty[2],
-           fake_encoder,  (int16_t)motor_left_foc_driver.encoder_now_data,  (int16_t)motor_right_foc_driver.encoder_now_data,
-           (int16_t)motor_left_foc_driver.rotate, (int16_t)motor_right_foc_driver.rotate,
-           (int16_t)motor_left_foc_driver.speed_raw, (int16_t)motor_right_foc_driver.speed_raw,
-           (int16_t)motor_left_foc_driver.speed_filtered, (int16_t)motor_right_foc_driver.speed_filtered
+    // printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
+    //        motor_left_foc_driver.ouput_duty[0], motor_left_foc_driver.ouput_duty[1],
+    //        motor_left_foc_driver.ouput_duty[2],
+    //        motor_right_foc_driver.ouput_duty[0], motor_right_foc_driver.ouput_duty[1],
+    //        motor_right_foc_driver.ouput_duty[2],
+    //        fake_encoder,  (int16_t)motor_left_foc_driver.encoder_now_data,  (int16_t)motor_right_foc_driver.encoder_now_data,
+    //        (int16_t)motor_left_foc_driver.rotate, (int16_t)motor_right_foc_driver.rotate,
+    //        (int16_t)motor_left_foc_driver.speed_raw, (int16_t)motor_right_foc_driver.speed_raw,
+    //        (int16_t)motor_left_foc_driver.speed_filtered, (int16_t)motor_right_foc_driver.speed_filtered
+    //
+    //        // fake_encoder, read_left_encoder(), read_right_encoder()
+    // );
+    // if (L_RX_capture.capture_end_flag == 1 && R_RX_capture.capture_end_flag == 1) {
+    // PWM_Capture_Read_And_Clear(&L_RX_capture);
+    // PWM_Capture_Read_And_Clear(&R_RX_capture);
+      printf("%ld, %ld, %ld, %ld, %ld, %ld\n", (int32_t)L_RX_capture.freq, (int32_t)round(L_RX_capture.duty * 1000.f + 0.5f),  (int32_t)R_RX_capture.freq, (int32_t)round(R_RX_capture.duty * 1000.f + 0.5f), L_RX_capture.high_val, R_RX_capture.high_val);
 
-           // fake_encoder, read_left_encoder(), read_right_encoder()
-    );
+    // L_RX_capture.capture_end_flag = 0;
+    // R_RX_capture.capture_end_flag = 0;
+    // }
     // HAL_Delay(1);
   }
   /* USER CODE END 3 */
@@ -218,19 +228,6 @@ int _write(int file, char *ptr, int len) {
   //   return 0;
   // }
   return len;
-}
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-  if (htim->Instance == TIM1) {
-    HAL_GPIO_TogglePin(LEFT_LED_GPIO_Port, LEFT_LED_Pin);
-    foc_control_fast(&motor_left_foc_driver, read_left_encoder(), 0.3f);
-  }
-
-  if (htim->Instance == TIM8) {
-    HAL_GPIO_TogglePin(RIGHT_LED_GPIO_Port, RIGHT_LED_Pin);
-    foc_control_fast(&motor_right_foc_driver, read_right_encoder(), 0.3f);
-  }
 }
 
 /* USER CODE END 4 */

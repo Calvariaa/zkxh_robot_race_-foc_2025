@@ -55,7 +55,6 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -70,7 +69,9 @@ extern uint64_t total_time_10ms;
   * @brief  The application entry point.
   * @retval int
   */
-int main(void) {
+int main(void)
+{
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -114,17 +115,15 @@ int main(void) {
 
   HAL_TIM_Base_Start_IT(&htim6);
 
-  HAL_TIM_PWM_Start(&htim15,TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_2);
 
+  HAL_TIM_IC_Start_IT(&htim15, TIM_CHANNEL_1);
   HAL_TIM_IC_Start_IT(&htim15, TIM_CHANNEL_2);
-  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_1, COM_COUNT_PERIOD / 2); // L_TX
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, COM_COUNT_PERIOD / 2); // R_TX
   char chr[256] = {0};
   while (1) {
     /* USER CODE END WHILE */
@@ -140,7 +139,8 @@ int main(void) {
   * @brief System Clock Configuration
   * @retval None
   */
-void SystemClock_Config(void) {
+void SystemClock_Config(void)
+{
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
@@ -151,7 +151,7 @@ void SystemClock_Config(void) {
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSI48;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSI48;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
@@ -162,20 +162,22 @@ void SystemClock_Config(void) {
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
     Error_Handler();
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
-                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+  {
     Error_Handler();
   }
 }
@@ -198,72 +200,14 @@ int _write(int file, char *ptr, int len) {
   return len;
 }
 
-typedef enum {
-  CAPTURE_RISING = 0,
-  CAPTURE_FALLING = 1,
-  CAPTURE_RISING_2 = 2
-} capture_state_t;
-
-typedef struct {
-  volatile float freq;
-  volatile float duty;
-  volatile int capture_end_flag;
-  volatile uint32_t high_val;
-  volatile uint32_t low_val;
-  volatile capture_state_t capture_state;
-} pwm_capture_t;
-
-pwm_capture_t L_RX_capture; // TIM15_2
-pwm_capture_t R_RX_capture; // TIM4_2
-
-// volatile float TIM3CH2_Freq = 0.0;
-// volatile float TIM3CH2_Duty = 0.0;
-// volatile int capture_end_flag = 0;
-//
-// volatile uint32_t high_val = 0;
-// volatile uint32_t low_val = 0;
-
-//TIM单通道采集PWM频率+占空比
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
-  if (htim->Instance == TIM15) //判断是否由定时器15产生
-  {
-    if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) //通道2
-    {
-      if (L_RX_capture.capture_end_flag == 0) {
-        if (L_RX_capture.capture_state == CAPTURE_RISING) //第一个上升沿
-        {
-          L_RX_capture.capture_state = CAPTURE_FALLING;
-          __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_2, TIM_INPUTCHANNELPOLARITY_FALLING); //设置成下降沿触发
-          __HAL_TIM_SetCounter(htim, 0); //清空定时器计数值
-          L_RX_capture.high_val = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2); //由第一个上升沿设为起始位置
-        } else if (L_RX_capture.capture_state == CAPTURE_FALLING) //第一个下降沿
-        {
-          L_RX_capture.capture_state = CAPTURE_RISING_2;
-          L_RX_capture.low_val = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2); //低电平起始位置
-          __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_2, TIM_INPUTCHANNELPOLARITY_RISING); //设置成上升沿触发
-        } else if (L_RX_capture.capture_state == CAPTURE_RISING_2) //第二个上升沿
-        {
-          L_RX_capture.capture_state = CAPTURE_RISING;
-          L_RX_capture.high_val = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
-
-          //计算频率
-          L_RX_capture.freq = (float) TIM_CLK_MHz * 1000000 / COM_PRESCALER / (L_RX_capture.high_val + 1);
-          //计算占空比
-          L_RX_capture.duty = (float) (L_RX_capture.low_val + 1) / (L_RX_capture.high_val + 1);
-          L_RX_capture.capture_end_flag = 1;
-        }
-      }
-    }
-  }
-}
-
 /* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
-void Error_Handler(void) {
+void Error_Handler(void)
+{
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
@@ -289,7 +233,8 @@ void Error_Handler(void) {
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(uint8_t *file, uint32_t line) {
+void assert_failed(uint8_t *file, uint32_t line)
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

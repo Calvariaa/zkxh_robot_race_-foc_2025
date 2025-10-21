@@ -114,7 +114,7 @@ int main(void)
   // foc_init(&foc_L, &htim1);
   // foc_init(&foc_R, &htim8);
 
-  foc_control_fast_init(&htim1, &motor_left_foc_driver, 16383, PWM_COUNT_PERIOD, 10, 1030, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
+  foc_control_fast_init(&htim1, &motor_left_foc_driver, 16383, PWM_COUNT_PERIOD, 10, 1780, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
   foc_control_fast_init(&htim8, &motor_right_foc_driver, 16383, PWM_COUNT_PERIOD, 10, 1370, -1, FOC_TRACTION_ANGLE, FOC_PREACT_ANGLE);
 
   HAL_TIM_Base_Start_IT(&htim1);
@@ -156,7 +156,10 @@ int main(void)
     // if (L_RX_capture.capture_end_flag == 1 && R_RX_capture.capture_end_flag == 1) {
     // PWM_Capture_Read_And_Clear(&L_RX_capture);
     // PWM_Capture_Read_And_Clear(&R_RX_capture);
-      printf("%ld, %ld, %ld, %ld, %ld, %ld\n", (int32_t)L_RX_capture.freq, (int32_t)round(L_RX_capture.duty * 1000.f + 0.5f),  (int32_t)R_RX_capture.freq, (int32_t)round(R_RX_capture.duty * 1000.f + 0.5f), L_RX_capture.high_val, R_RX_capture.high_val);
+      // printf("%ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld\n", (int32_t)L_RX_capture.freq, (int32_t)round(L_RX_capture.duty * 1000.f + 0.5f),  (int32_t)R_RX_capture.freq, (int32_t)round(R_RX_capture.duty * 1000.f + 0.5f), L_RX_capture.high_val, R_RX_capture.high_val,
+      //   (int32_t)motor_left_foc_driver.speed_filtered, (int16_t)motor_right_foc_driver.speed_filtered);
+      printf("%ld, %ld, %ld, %ld\n", (int32_t)(speed_struct.left * 10000), (int32_t)(speed_struct.right * 10000), (int32_t)motor_left_foc_driver.speed_filtered, (int32_t)motor_right_foc_driver.speed_filtered);
+
 
     // L_RX_capture.capture_end_flag = 0;
     // R_RX_capture.capture_end_flag = 0;

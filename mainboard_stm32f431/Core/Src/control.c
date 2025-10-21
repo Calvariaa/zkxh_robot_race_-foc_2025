@@ -4,9 +4,9 @@
 #include "icm42688.h"
 #include "stdio.h"
 
+int16_t accel[3], gyro[3];
 
-key_struct_t key;
-
+key_struct_t key = {0};
 
 void key_scan(void) {
     key.state = HAL_GPIO_ReadPin(PRESS_GPIO_Port,PRESS_Pin);

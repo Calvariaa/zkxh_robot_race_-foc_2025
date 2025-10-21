@@ -1,0 +1,8 @@
+//
+// Created by Calvaria on 2025/10/21.
+//
+
+#ifndef MAINBOARD_STM32F431_DATA_H
+#define MAINBOARD_STM32F431_DATA_H
+
+#endif //MAINBOARD_STM32F431_DATA_H

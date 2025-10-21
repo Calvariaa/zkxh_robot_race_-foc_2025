@@ -9,6 +9,14 @@
 pwm_capture_t L_RX_capture = PWM_CAPTURE_T_INIT(TIM2, TIM_CHANNEL_3, HAL_TIM_ACTIVE_CHANNEL_3);
 pwm_capture_t R_RX_capture = PWM_CAPTURE_T_INIT(TIM2, TIM_CHANNEL_4, HAL_TIM_ACTIVE_CHANNEL_4);
 
+speed_struct_t speed_struct = {0};
+
+int clip(int x, int low, int up)
+{
+  return x > up ? up : x < low ? low
+                               : x;
+}
+
 // PWM捕获处理函数
 void PWM_Capture_Process(const TIM_HandleTypeDef *htim, pwm_capture_t *capture) {
   // if (capture->capture_end_flag == 0) {
@@ -36,6 +44,7 @@ void PWM_Capture_Process(const TIM_HandleTypeDef *htim, pwm_capture_t *capture) 
     // }
   }
 }
+
 //TIM单通道采集PWM频率+占空比
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == L_RX_capture.Instance) {
@@ -57,32 +66,34 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     HAL_GPIO_TogglePin(LEFT_LED_GPIO_Port, LEFT_LED_Pin);
 
     float duty = 0;
-    duty = L_RX_capture.duty - 0.5f;
+    duty = L_RX_capture.duty * (L_RX_capture.freq / 500.f) - 0.5f;
 
     if (duty < -0.3f || duty > 0.3f) duty = 0;
     else if (duty < -0.25f) duty = -0.25f;
     else if (duty > 0.25f) duty = 0.25f;
-    duty *= 3.8f;
+    speed_struct.left = duty * 3.8f - 0.004f;
 
-    foc_control_fast(&motor_left_foc_driver, read_left_encoder(), duty);
+    foc_control_fast(&motor_left_foc_driver, read_left_encoder(), speed_struct.left);
   }
 
   if (htim->Instance == TIM8) {
     HAL_GPIO_TogglePin(RIGHT_LED_GPIO_Port, RIGHT_LED_Pin);
 
     float duty = 0;
-    duty = R_RX_capture.duty - 0.5f;
+    duty = R_RX_capture.duty * (R_RX_capture.freq / 500.f) - 0.5f;
 
     if (duty < -0.3f || duty > 0.3f) duty = 0;
     else if (duty < -0.25f) duty = -0.25f;
     else if (duty > 0.25f) duty = 0.25f;
-    duty *= 3.8f;
+    speed_struct.right = duty * 3.8f - 0.004f;
 
-    foc_control_fast(&motor_right_foc_driver, read_right_encoder(), duty);
+    foc_control_fast(&motor_right_foc_driver, read_right_encoder(), speed_struct.right);
   }
 
   if (htim->Instance == TIM6) {
     // PWM_Capture_Read_And_Clear(&L_RX_capture);
     // PWM_Capture_Read_And_Clear(&R_RX_capture);
+    __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, clip((motor_left_foc_driver.speed_filtered + 500) * TX_COUNT_PERIOD / 1000, 0, TX_COUNT_PERIOD-1)); // L_TX
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, clip((motor_right_foc_driver.speed_filtered + 500) * TX_COUNT_PERIOD / 1000, 0, TX_COUNT_PERIOD-1)); // R_TX
   }
 }

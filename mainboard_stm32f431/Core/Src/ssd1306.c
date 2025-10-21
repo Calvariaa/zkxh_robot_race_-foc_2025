@@ -35,8 +35,8 @@ SSD1306_Geometry display_geometry = SSD1306_GEOMETRY;
 //
 //  Get a width and height screen size
 //
-static const uint16_t width(void) { return SSD1306_WIDTH; };
-static const uint16_t height(void) { return SSD1306_HEIGHT; };
+static uint16_t width(void) { return SSD1306_WIDTH; }
+static uint16_t height(void) { return SSD1306_HEIGHT; }
 
 uint16_t ssd1306_GetWidth(void) {
   return SSD1306_WIDTH;
@@ -660,6 +660,99 @@ char ssd1306_WriteString(char *str, FontDef Font) {
 
   // Everything ok
   return *str;
+}
+
+void func_double_to_str(char *str, double number, uint8_t point_bit) {
+  assert_param(NULL != str);
+  int data_int = 0; // 整数部分
+  int data_float = 0.0; // 小数部分
+  int data_temp[12]; // 整数字符缓冲
+  int data_temp_point[9]; // 小数字符缓冲
+  uint8_t bit = point_bit; // 转换精度位数
+
+  do {
+    if (NULL == str) {
+      break;
+    }
+
+    // 提取整数部分
+    data_int = (int) number; // 直接强制转换为 int
+    if (0 > number) // 判断源数据是正数还是负数
+    {
+      *str++ = '-';
+    } else if (0.0 == number) // 如果是个 0
+    {
+      *str++ = '0';
+      *str++ = '.';
+      *str = '0';
+      break;
+    }
+
+    // 提取小数部分
+    number = number - data_int; // 减去整数部分即可
+    while (bit--) {
+      number = number * 10; // 将需要的小数位数提取到整数部分
+    }
+    data_float = (int) number; // 获取这部分数值
+
+    // 整数部分转为字符串
+    bit = 0;
+    do {
+      data_temp[bit++] = data_int % 10; // 将整数部分倒序写入字符缓冲区
+      data_int /= 10;
+    } while (0 != data_int);
+    while (0 != bit) {
+      *str++ = (abs(data_temp[bit - 1]) + 0x30); // 再倒序将倒序的数值写入字符串 得到正序数值
+      bit--;
+    }
+
+    // 小数部分转为字符串
+    if (0 != point_bit) {
+      bit = 0;
+      *str++ = '.';
+      if (0 == data_float) {
+        *str = '0';
+      } else {
+        while (0 != point_bit) // 判断有效位数
+        {
+          data_temp_point[bit++] = data_float % 10; // 倒序写入字符缓冲区
+          data_float /= 10;
+          point_bit--;
+        }
+        while (0 != bit) {
+          *str++ = (abs(data_temp_point[bit - 1]) + 0x30); // 再倒序将倒序的数值写入字符串 得到正序数值
+          bit--;
+        }
+      }
+    }
+  } while (0);
+}
+
+void ssd1306_WriteFloat(const double dat, uint8_t num, uint8_t pointnum, FontDef Font) {
+  // 如果程序在输出了断言信息 并且提示出错位置在这里
+  // 那么一般是屏幕显示的时候超过屏幕分辨率范围了
+  // 检查一下你的显示调用的函数 自己计算一下哪里超过了屏幕显示范围
+  assert_param(128 > x);
+  assert_param(8 > y);
+
+  assert_param(0 < num);
+  assert_param(8 >= num);
+  assert_param(0 < pointnum);
+  assert_param(6 >= pointnum);
+
+  double dat_temp = dat;
+  double offset = 1.0;
+  char data_buffer[17];
+  memset(data_buffer, 0, 17);
+  memset(data_buffer, ' ', num + pointnum + 2);
+
+  // 用来计算余数显示 123 显示 2 位则应该显示 23
+  for (; 0 < num; num--) {
+    offset *= 10;
+  }
+  dat_temp = dat_temp - ((int) dat_temp / (int) offset) * offset;
+  func_double_to_str(data_buffer, dat_temp, pointnum);
+  ssd1306_WriteString(data_buffer, Font);
 }
 
 //

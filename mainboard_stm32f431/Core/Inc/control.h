@@ -4,14 +4,15 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-typedef struct
-{
-    uint8_t step;
-    bool state;
-    bool key_short;
-    uint16_t time;
-    bool key_long;
-}key_struct_t;
+typedef struct {
+  uint8_t step;
+  bool state;
+  bool key_short;
+  uint16_t time;
+  bool key_long;
+} key_struct_t;
+
+extern int16_t accel[3], gyro[3];
 
 extern key_struct_t key;
 

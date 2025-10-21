@@ -28,7 +28,7 @@
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
 #include "ssd1306.h"
-#include "icm42688.h"
+#include "mpu6050.h"
 #include "interface.h"
 /* USER CODE END Includes */
 
@@ -109,7 +109,7 @@ int main(void)
 
   HAL_Delay(100);
   // 初始化ICM42688
-  ICM42688_Init(&hi2c2);
+  MPU6050_Init(&hi2c2);
 
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 
@@ -124,7 +124,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  char chr[256] = {0};
+  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, TX_COUNT_PERIOD / 2);  // L_TX
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, TX_COUNT_PERIOD / 2);  // R_TX
   while (1) {
     /* USER CODE END WHILE */
 
@@ -185,8 +186,9 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 
-int _write(int file, char *ptr, int len) {
-  CDC_Transmit_FS(ptr, len);
+int _write(const int file, char *ptr, const int len) {
+  CDC_Transmit_FS((uint8_t *)ptr, len);
+  (void)file;
   // static uint8_t rc = USBD_OK;
   //
   // do {

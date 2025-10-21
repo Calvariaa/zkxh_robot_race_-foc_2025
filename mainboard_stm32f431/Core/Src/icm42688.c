@@ -92,6 +92,7 @@ HAL_StatusTypeDef ICM42688_WriteReg(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_
   */
 HAL_StatusTypeDef ICM42688_ReadReg(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_t *data, uint16_t len)
 {
+    return HAL_I2C_Mem_Read(hi2c, ICM42688_ADDRESS << 1, reg, 1, data, len, 100);
     // 先发送寄存器地址
     HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(hi2c, ICM42688_ADDRESS << 1, &reg, 1, 100);
     if(status != HAL_OK)

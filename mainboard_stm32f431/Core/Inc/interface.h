@@ -16,11 +16,9 @@ ssd1306_WriteString((_chr), Font_7x10); \
 } while (0);
 
 
-#define screen_show_float(_x, _y, _num, _, __) do { \
-static char _chr[128]; \
-sprintf(_chr, "%f ", ((float)_num)); \
+#define screen_show_float(_x, _y, _num, _int, _float) do { \
 ssd1306_SetCursor((_x), 10 * (_y)); \
-ssd1306_WriteString((_chr), Font_7x10); \
+ssd1306_WriteFloat((_num), _int, _float, Font_7x10); \
 } while (0);
 
 #define screen_clear ssd1306_Clear

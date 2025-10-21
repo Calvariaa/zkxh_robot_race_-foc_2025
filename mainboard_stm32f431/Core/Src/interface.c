@@ -5,6 +5,8 @@
 #include "stdbool.h"
 #include "ssd1306.h"
 #include "control.h"
+#include "isr.h"
+#include "mpu6050.h"
 
 uint8_t pages = 0;
 char chr[256];
@@ -194,7 +196,6 @@ void edit_all_option(const O_SELECT *select_opt, const uint8_t select_opt_num) {
         screen_clear();
         ChangeDataFlag = false;
         current_func = display_main;
-        screen_show_string(36, 0, "[Main]");
     }
 }
 
@@ -243,19 +244,22 @@ void display_pid(void) {
     edit_all_option(select_opt, sizeof(select_opt) / sizeof(O_SELECT));
 }
 
-void get_uart(void) {
+void get_sensor(void) {
     // screen_show_uint32(0, 2, timer_1s, 10);
     // screen_show_uint16(0, 3, (uint16_t)uart_timer_update, 6);
     // screen_show_uint16(0, 4, (uint16_t)uart_get_count, 6);
-    //
-    // screen_show_int32(0, 6, icar_param.duty_x, 10);
-    // screen_show_int32(0, 7, icar_param.duty_y, 10);
-    //
-    // if (key_long_press())
-    // {
-    //     screen_clear();
-    //     current_func = display_main;
-    // }
+    screen_show_float(0, 1, MPU6050.Gz, 5, 3);
+
+    screen_show_float(64, 2, speed_struct.left, 5, 3);
+    screen_show_float(64, 3, speed_struct.right, 5, 3);
+
+
+
+    if (read_long_confirm()) {
+        screen_clear();
+        ChangeDataFlag = false;
+        current_func = display_main;
+    }
 }
 
 // 目录
@@ -267,7 +271,7 @@ void display_main(void) {
     const M_SELECT select_opt[] =
     {
         {"pid", display_pid},
-        {"get uart", get_uart},
+        {"get sensor", get_sensor},
     };
 
     edit_all_menu(select_opt, sizeof(select_opt) / sizeof(M_SELECT));

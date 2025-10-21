@@ -32,6 +32,13 @@ typedef struct {
   volatile float duty;
 } pwm_capture_t;
 
+typedef struct {
+  float left;
+  float right;
+} speed_struct_t;
+
+extern speed_struct_t speed_struct;
+
 #define PWM_CAPTURE_T_INIT(_Instance, _Channel, _ActiveChannel) \
 { \
 .Instance = _Instance, \

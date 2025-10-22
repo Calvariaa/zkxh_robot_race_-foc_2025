@@ -60,3 +60,73 @@ int8_t calc_left_right_error(void) {
   }
   return left + right - MAX_FRONT_LED;
 }
+
+int8_t calc_left_right_error_enhanced(void) {
+  uint8_t left_start = 0;
+  uint8_t left_end = 18;
+  uint8_t right_start = 18;
+  uint8_t right_end = 0;
+
+  // 寻找左边第一个白色点
+  for (uint8_t i = 0; i < MAX_FRONT_LED; i++) {
+    if (gray_forward_value[i]) {
+      left_start = i;
+      break;
+    }
+  }
+
+  // 寻找右边第一个白色点
+  for (uint8_t i = MAX_FRONT_LED; i > 0; i--) {
+    if (gray_forward_value[i - 1]) {
+      right_start = i - 1;
+      break;
+    }
+  }
+
+  // 如果左右都没有检测到白线，返回0（保持直行或特殊处理）
+  if (left_start == 0 && !gray_forward_value[0] &&
+      right_start == 18 && !gray_forward_value[17]) {
+    return 0;
+      }
+
+  // 从左边第一个白色点继续向右寻找白色点结束的位置
+  for (uint8_t i = left_start; i < MAX_FRONT_LED; i++) {
+    if (!gray_forward_value[i]) {
+      left_end = i;
+      break;
+    }
+    // // 如果一直到最右边都是白色，则结束位置为最右边
+    // if (i == MAX_FRONT_LED - 1) {
+    //   left_end = i;
+    // }
+  }
+
+  // 从右边第一个白色点继续向左寻找白色点结束的位置
+  for (uint8_t i = right_start; i > 0; i--) {
+    if (!gray_forward_value[i]) {
+      right_end = i;
+      break;
+    }
+    // // 如果一直到最左边都是白色，则结束位置为最左边
+    // if (i == 0) {
+    //   right_end = i;
+    // }
+  }
+
+  // 检查左边第一个白色点到右边第一个白色点的范围内是否有白色点
+  bool has_white_points = false;
+  for (uint8_t i = left_end; i <= right_end; i++) {
+    if (gray_forward_value[i]) {
+      has_white_points = true;
+      break;
+    }
+  }
+
+  if (has_white_points || left_end > right_end) {
+    // 正常循迹：使用左右第一个白色点计算中值
+    return left_start + right_start - MAX_FRONT_LED + 1;
+  }
+
+    // 特殊处理：使用最右边第一个白色点和白色点结束位置计算中值
+    return right_end + right_start - MAX_FRONT_LED + 2;
+}

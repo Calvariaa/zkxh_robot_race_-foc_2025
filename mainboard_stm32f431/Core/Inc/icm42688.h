@@ -3,6 +3,8 @@
 
 #include "stm32g4xx_hal.h"
 
+extern uint8_t dma_gyro_data[6];
+
 // ICM-42688-P I2C地址 (AD0引脚低电平)
 #define ICM42688_ADDRESS         0x68
 
@@ -31,6 +33,7 @@ HAL_StatusTypeDef ICM42688_WriteReg(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_
 HAL_StatusTypeDef ICM42688_ReadReg(I2C_HandleTypeDef *hi2c, uint8_t reg, uint8_t *data, uint16_t len);
 HAL_StatusTypeDef ICM42688_ReadAccel(I2C_HandleTypeDef *hi2c, int16_t accel[3]);
 HAL_StatusTypeDef ICM42688_ReadGyro(I2C_HandleTypeDef *hi2c, int16_t gyro[3]);
+void ICM42688_ReadGyro_DMA(int16_t gyro[3]);
 float ICM42688_ReadTemperature(I2C_HandleTypeDef *hi2c);
 
 #endif /* __ICM42688_H */

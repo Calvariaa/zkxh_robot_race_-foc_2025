@@ -12,5 +12,6 @@ extern bool gray_backward_value[MAX_BACK_LED];
 
 void read_gray_sensor(void);
 int8_t calc_left_right_error(void);
+int8_t calc_left_right_error_enhanced(void);
 
 #endif

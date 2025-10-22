@@ -113,6 +113,8 @@ int main(void)
 
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 
+  HAL_I2C_Mem_Read_DMA(&hi2c2, ICM42688_ADDRESS << 1, GYRO_DATA_X1, 1, dma_gyro_data, 6);
+
   HAL_TIM_Base_Start_IT(&htim6);
 
   HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);

@@ -2,6 +2,10 @@
 #include "main.h"
 #include <math.h>
 
+#include "i2c.h"
+
+uint8_t dma_gyro_data[6];
+
 /**
   * @brief  ICM42688初始化
   * @param  hi2c: I2C句柄指针
@@ -145,11 +149,22 @@ HAL_StatusTypeDef ICM42688_ReadGyro(I2C_HandleTypeDef *hi2c, int16_t gyro[3])
         return status;
     }
 
-    gyro[0] = (int16_t)((data[0] << 8) | data[1]); // X轴
-    gyro[1] = (int16_t)((data[2] << 8) | data[3]); // Y轴
-    gyro[2] = (int16_t)((data[4] << 8) | data[5]); // Z轴
+    // 避免符号扩展问题
+    gyro[0] = (int16_t)(((uint16_t)data[0] << 8) | (uint16_t)data[1]); // X轴
+    gyro[1] = (int16_t)(((uint16_t)data[2] << 8) | (uint16_t)data[3]); // Y轴
+    gyro[2] = (int16_t)(((uint16_t)data[4] << 8) | (uint16_t)data[5]); // Z轴
 
     return HAL_OK;
+}
+
+
+void ICM42688_ReadGyro_DMA(int16_t gyro[3])
+{
+    HAL_I2C_Mem_Read_DMA(&hi2c2, ICM42688_ADDRESS << 1, GYRO_DATA_X1, 1, dma_gyro_data, 6);
+    // 避免符号扩展问题
+    gyro[0] = (int16_t)(((uint16_t)dma_gyro_data[0] << 8) | (uint16_t)dma_gyro_data[1]); // X轴
+    gyro[1] = (int16_t)(((uint16_t)dma_gyro_data[2] << 8) | (uint16_t)dma_gyro_data[3]); // Y轴
+    gyro[2] = (int16_t)(((uint16_t)dma_gyro_data[4] << 8) | (uint16_t)dma_gyro_data[5]); // Z轴
 }
 
 /**

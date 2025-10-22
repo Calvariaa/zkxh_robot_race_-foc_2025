@@ -22,6 +22,7 @@ typedef struct {
 extern int16_t accel[3], gyro[3];
 
 extern control_state_t control_state;
+extern int16_t turn_error;
 extern key_struct_t key;
 
 extern int32_t count;

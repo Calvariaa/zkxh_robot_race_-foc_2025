@@ -251,7 +251,7 @@ void get_sensor(void) {
   // screen_show_uint16(0, 4, (uint16_t)uart_get_count, 6);
 
   screen_show_float(0, 2, gyro[2], 5, 3);
-  screen_show_int(64, 2, calc_left_right_error(), 2);
+  screen_show_int(64, 2, turn_error, 2);
   // ssd1306_DrawProgressBar(0, 10, 100, 8, 40);
 
   for (uint8_t x = 1; x < 127; x++) {
